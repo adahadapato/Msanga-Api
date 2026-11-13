@@ -5,4 +5,5 @@
   <Project Path="Msanga.Persistence/Msanga.Persistence.csproj" Id="1161641f-f853-4850-b6fd-a65a4d2ff53e" />
   <Project Path="Msanga.Presentation/Msanga.Presentation.csproj" Id="8871ee12-bebc-49e3-81ec-a9d22a45db1f" />
   <Project Path="Msanga.Worker/Msanga.Worker.csproj" Id="676e2164-1f24-43fc-aa22-1e0e3d195bd6" />
+  <Project Path="Msanga.UnitTests/Msanga.UnitTests.csproj" />
 </Solution>

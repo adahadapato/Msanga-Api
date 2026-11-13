@@ -18,18 +18,24 @@ You need the .NET 11 SDK and SQL Server (LocalDB comes with Visual Studio; or SQ
    ```powershell
    cd Msanga.Presentation
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=(localdb)\MSSQLLocalDB;Database=Msanga;Trusted_Connection=True;TrustServerCertificate=True"
-   dotnet user-secrets set "Jwt:Key" ([Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(48)))
+   $bytes = New-Object byte[] 48                                   # a random 64-character key
+   [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+   dotnet user-secrets set "Jwt:Key" ([Convert]::ToBase64String($bytes))
    cd ..
    ```
 
 2. **The first database migration** (once; it creates `Msanga.Persistence/Migrations`, which you commit):
 
    ```powershell
-   dotnet tool install --global dotnet-ef
+   dotnet tool restore        # Msanga's own dotnet-ef (11.x), from dotnet-tools.json
    dotnet ef migrations add InitialAccounts --project Msanga.Persistence --startup-project Msanga.Presentation
    ```
 
    Later model changes get their own migration the same way (`dotnet ef migrations add <Name> …`).
+
+   The tool is local to this repo, so zayun's pinned 10.0.15 isn't touched. When EF Core moves on (the `11.*`
+   packages pick that up) and `dotnet ef` warns that the tools are older than the runtime, run
+   `dotnet tool update dotnet-ef` in this folder.
 
 3. **Start it:**
 
@@ -57,6 +63,15 @@ cd ..
 Restart the API: the console says "Seeded demo member hilary@example.com". She's created once; after that she's left
 alone. This only happens where `SeedData:DemoMembersEnabled` is true, i.e. `appsettings.Development.json`; the live
 server never has demo members.
+
+## Tests
+
+```powershell
+dotnet test
+```
+
+`Msanga.UnitTests` checks Msanga's rules (no database or web server needed), e.g. that "Govt. Coll., Umuahia" and
+"Government College Umuahia" give the same search key. GitHub runs them on every push too.
 
 ## Emails
 

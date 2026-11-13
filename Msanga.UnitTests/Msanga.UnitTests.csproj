@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Fast tests of Msanga's rules: no database, no web server. Run with `dotnet test`. -->
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Floating versions, as everywhere in Msanga: restore picks up the newest 18.x / 3.x. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.*" />
+    <PackageReference Include="xunit.v3" Version="3.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Msanga.Domain\Msanga.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

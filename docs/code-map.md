@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M1 accounts, codes instead of links (13 Nov 2026)_
+_Last updated: M2a-1 search keys and the first tests (13 Nov 2026)_
 
 ## Layers
 
@@ -13,16 +13,19 @@ Presentation (web API, composition root)
  ├─ Infrastructure (sign-in, JWT, email, settings) ─┬─ Application (use cases) ── Domain
  │                                                   └─ Persistence (SQL Server) ── Domain
  └─ Worker (background jobs, none yet) ── Application
+
+UnitTests ── Domain (more layers as their tests arrive)
 ```
 
 | Project | What lives there |
 |---|---|
-| `Msanga.Domain` | entities (`Member`, `RefreshToken`, `AccountCode`), `Result` / `Error`, `AuthErrors`, interfaces (`IAuthService`, `IEmailSender`, repositories, `IUnitOfWork`, `ICurrentUser`), constants (setting keys, roles, policies). No packages. |
+| `Msanga.Domain` | entities (`Member`, `RefreshToken`, `AccountCode`), `Result` / `Error`, `AuthErrors`, interfaces (`IAuthService`, `IEmailSender`, repositories, `IUnitOfWork`, `ICurrentUser`), constants (setting keys, roles, policies), `SearchKey`. No packages. |
 | `Msanga.Application` | MediatR commands / queries and their FluentValidation validators; the pipeline (Logging → Validation → handler). |
 | `Msanga.Persistence` | `MsangaDbContext` (Identity's tables + ours), table configurations, repositories, migrations (created with `dotnet ef`), start-up seeding (migrate, roles). |
 | `Msanga.Infrastructure` | `AuthService` (Identity + JWT + emailed codes), `AccountEmails` (wording), SMTP sender (MailKit) and the development outbox folder, settings checked at start-up. |
 | `Msanga.Presentation` | `Program.cs`, endpoints (`/api/hello`, `/api/auth`, `/api/me`), JWT authentication, CORS, rate limits, ProblemDetails errors, OpenAPI + Swagger, Serilog. |
 | `Msanga.Worker` | the place for scheduled jobs (none yet). |
+| `Msanga.UnitTests` | fast tests of the rules (xUnit v3), no database; `dotnet test`, and on every push. |
 
 ## M1: accounts (13 Nov 2026)
 
@@ -63,14 +66,29 @@ password at least 10 characters, no "one capital, one symbol" rules; 5 wrong pas
 - The projects reference each other as in the diagram above; the template's `Class1.cs` files and the
   WeatherForecast sample are gone.
 
+## M2a-1: search keys (13 Nov 2026)
+
+The first piece of M2 (communities: schools). Decisions: any member can add a school (marked "New" until an admin
+reviews it in M7); levels Primary, Secondary, Tertiary (universities, polytechnics, colleges of education); any
+country, Nigeria first; the starting list is the pilot schools, then members add.
+
+| File | What it does |
+|---|---|
+| `Domain/Shared/SearchKey.cs` | a name → its search key: no accents, lowercase, no apostrophes, marks → spaces, initials joined ("F.G.C." → "fgc"), "the" dropped, short forms written out (`ShortForms`: "govt" → "government", "fgc" → "federal government college"…); whole words only |
+| `UnitTests/Domain/SearchKeyTests.cs` | every way of writing a name we expect, and the key it must give |
+| `.github/workflows/msanga-api-ci.yml` | now also runs `dotnet test` |
+
 ## Coming next
 
-- **Tests:** a test project (domain rules, AuthService against SQLite or Testcontainers, endpoints with
-  `WebApplicationFactory`).
+- **M2a-2:** the `Community` and `CommunityAlias` tables (migration `Communities`), `GET /api/communities?search=`,
+  `GET /api/communities/{id}`, development seed of pilot schools.
+- **M2b:** `POST /api/communities` with "Did you mean…?" (409 with suggestions) and a rate limit.
+
+- **More tests:** AuthService against SQLite or Testcontainers, endpoints with `WebApplicationFactory`.
 - **Web app:** "Check your email" and "Choose a new password" become code boxes (`inputmode="numeric"`,
   `autocomplete="one-time-code"`); then switch `msanga-web/src/api/auth.ts` from the stand-in to these endpoints
   (tokens kept by the web app, refresh before the access token expires).
-- **M2–M3:** communities and sets.
+- **M3:** sets (Class of 1998…) inside each school.
 - **Photos (in the first milestone that handles pictures: the profile photo or the "Then & Now" wall):** add the
   `Storage` and `Images` settings then, together with the code that reads and checks them at start-up. Starting point
   (from zayun, 13 Nov 2026), to be agreed in plain English first:

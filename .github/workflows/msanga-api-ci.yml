@@ -1,8 +1,8 @@
 # ============================================================
 # Msanga API: checks
 #
-# Runs on every push and pull request to main: restore, build (warnings shown), and the tests once they exist.
-# A red cross on GitHub means the API doesn't build.
+# Runs on every push and pull request to main: restore, build (warnings shown), then the tests.
+# A red cross on GitHub means the API doesn't build or a test failed.
 #
 # No deploy yet: Msanga runs on Enobong's PC until M9 (deploy and pilot).
 # ============================================================
@@ -34,3 +34,6 @@ jobs:
 
       - name: Build
         run: dotnet build Msanga.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Msanga.slnx --configuration Release --no-build
