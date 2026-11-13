@@ -8,6 +8,7 @@ using Msanga.Domain.Interfaces.Identity;
 using Msanga.Persistence.Interceptors;
 using Msanga.Persistence.Repositories;
 using Msanga.Persistence.Repositories.Identity;
+using Msanga.Persistence.Seeding;
 
 namespace Msanga.Persistence;
 
@@ -19,6 +20,7 @@ namespace Msanga.Persistence;
 ///   <item><description><b>Database context:</b> SQL Server, migrations in this project.</description></item>
 ///   <item><description><b>Unit of work:</b> the same context instance, seen as <see cref="IUnitOfWork"/>.</description></item>
 ///   <item><description><b>Repositories:</b> members, and the sign-in tables.</description></item>
+///   <item><description><b>Seeding:</b> the <c>SeedData</c> settings (demo members, development only).</description></item>
 /// </list>
 /// </summary>
 /// <remarks>Called once, from Infrastructure's DependencyInjection.</remarks>
@@ -56,6 +58,13 @@ public static class DependencyInjection
         services.AddScoped<IMemberRepository, MemberRepository>();                                     // 5
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAccountCodeRepository, AccountCodeRepository>();
+
+        services.Configure<SeedDataSettings>(settings =>                                               // 6
+        {
+            settings.DemoMembersEnabled = bool.TryParse(configuration[AppSettings.SeedData.DemoMembersEnabled],
+                                                        out var enabled) && enabled;
+            settings.DemoPassword = configuration[AppSettings.SeedData.DemoPassword] ?? string.Empty;
+        });
 
         return services;
     }

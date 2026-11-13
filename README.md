@@ -43,6 +43,21 @@ You need the .NET 11 SDK and SQL Server (LocalDB comes with Visual Studio; or SQ
 
 `Msanga.Presentation/Msanga.Presentation.http` has every request ready to try from Visual Studio / VS Code.
 
+### A demo member to sign in as (development only)
+
+On your PC the API creates **Hilary Adeyemi** (`hilary@example.com`), already confirmed, so a fresh database
+always has someone to sign in with. Her password is yours to choose, kept in User Secrets (never in the repo):
+
+```powershell
+cd Msanga.Presentation
+dotnet user-secrets set "SeedData:DemoPassword" "reunion-1998-demo"
+cd ..
+```
+
+Restart the API: the console says "Seeded demo member hilary@example.com". She's created once; after that she's left
+alone. This only happens where `SeedData:DemoMembersEnabled` is true, i.e. `appsettings.Development.json`; the live
+server never has demo members.
+
 ## Emails
 
 Confirming an email and resetting a password use a **6-digit code** from the email, typed into the page (it works

@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Msanga.Persistence.Configurations.Identity;
 
 namespace Msanga.Persistence.Seeding;
 
 /// <summary>
-/// At start-up: applies pending database migrations, then creates the roles.
+/// At start-up: applies pending database migrations, creates the roles, and (development only) the demo members.
 /// </summary>
 /// <remarks>
 /// <para>Any failure is logged and stops start-up: a half-ready database is worse than an API that won't start.</para>
@@ -41,6 +42,14 @@ public static class DbSeeder
         await RunStepAsync(logger, "2: roles",
             () => ApplicationRoleSeeder.SeedAsync(provider.GetRequiredService<RoleManager<ApplicationRole>>(),
                                                   logger, cancellationToken));
+
+        var seedData = provider.GetRequiredService<IOptions<SeedDataSettings>>().Value;
+        if (seedData.DemoMembersEnabled)
+        {
+            await RunStepAsync(logger, "3: demo members (development)",
+                () => DemoMemberSeeder.SeedAsync(provider.GetRequiredService<UserManager<ApplicationUser>>(),
+                                                 context, seedData, logger, cancellationToken));
+        }
 
         logger.LogInformation("Database initialization completed.");
     }

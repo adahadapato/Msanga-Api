@@ -68,6 +68,20 @@ public static class AppSettings
         public const string Default = "ConnectionStrings:DefaultConnection";
     }
 
+    // ==================== Seed data ====================
+
+    /// <summary>Demo members for trying the app on a developer's PC (never on the live server).</summary>
+    public static class SeedData
+    {
+        public const string Section = "SeedData";
+
+        /// <summary>Create the demo members at start-up (true only in appsettings.Development.json).</summary>
+        public const string DemoMembersEnabled = "SeedData:DemoMembersEnabled";
+
+        /// <summary>Their password (SECRET: User Secrets only, never in appsettings).</summary>
+        public const string DemoPassword = "SeedData:DemoPassword";
+    }
+
     // ==================== Identity ====================
 
     /// <summary>Password, lockout and emailed-code rules.</summary>
