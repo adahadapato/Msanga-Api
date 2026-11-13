@@ -19,7 +19,7 @@ public static class AuthErrors
 
     /// <summary>The right password, but the email isn't confirmed yet.</summary>
     public static readonly Error EmailNotConfirmed = Error.Forbidden(
-        "Auth.EmailNotConfirmed", "Please confirm your email first: open the link we sent you.");
+        "Auth.EmailNotConfirmed", "Please confirm your email first: enter the code we sent you.");
 
     /// <summary>Too many wrong passwords in a row.</summary>
     public static readonly Error LockedOut = Error.Forbidden(
