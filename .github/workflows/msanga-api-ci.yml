@@ -1,0 +1,36 @@
+# ============================================================
+# Msanga API: checks
+#
+# Runs on every push and pull request to main: restore, build (warnings shown), and the tests once they exist.
+# A red cross on GitHub means the API doesn't build.
+#
+# No deploy yet: Msanga runs on Enobong's PC until M9 (deploy and pilot).
+# ============================================================
+
+name: Msanga API
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install .NET 11
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+
+      - name: Restore packages
+        run: dotnet restore Msanga.slnx
+
+      - name: Build
+        run: dotnet build Msanga.slnx --configuration Release --no-restore

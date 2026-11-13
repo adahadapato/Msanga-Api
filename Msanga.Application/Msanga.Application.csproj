@@ -1,9 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Use cases: MediatR commands and queries, their validators and the pipeline behaviours. -->
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.2.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
+    <PackageReference Include="MediatR" Version="14.2.0" />
+   
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Msanga.Domain\Msanga.Domain.csproj" />
+  </ItemGroup>
 
 </Project>

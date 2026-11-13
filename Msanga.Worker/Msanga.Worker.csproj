@@ -1,9 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Background jobs (none yet; e.g. tidying expired refresh tokens and account links later). -->
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  
+
+  <ItemGroup>
+    <ProjectReference Include="..\Msanga.Application\Msanga.Application.csproj" />
+  </ItemGroup>
 
 </Project>

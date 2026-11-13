@@ -1,11 +1,70 @@
-@Msanga.Presentation_HostAddress = http://localhost:5288
+# Try the API from Visual Studio / VS Code (REST Client). Start it first: the "https" profile.
+# Emails aren't sent while Email:Enabled is false: open the newest file in Msanga.Presentation/App_Data/emails and
+# copy its 6-digit code into the requests below.
 
-GET {{Msanga.Presentation_HostAddress}}/openapi/v1.json
+@api = https://localhost:7311
+
+### The greeting (no sign-in)
+GET {{api}}/api/hello
 Accept: application/json
 
-###
+### Create an account (always 204)
+POST {{api}}/api/auth/register
+Content-Type: application/json
 
-GET {{Msanga.Presentation_HostAddress}}/weatherforecast/
-Accept: application/json
+{
+  "firstName": "Ada",
+  "lastName": "Okon",
+  "schoolSurname": "",
+  "email": "ada@example.com",
+  "password": "my old school bell"
+}
 
-###
+### Confirm the email (the 6-digit code from the email)
+POST {{api}}/api/auth/confirm-email
+Content-Type: application/json
+
+{ "email": "ada@example.com", "code": "482913" }
+
+### Sign in: copy accessToken and refreshToken from the answer
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "ada@example.com", "password": "my old school bell" }
+
+### Who am I
+@accessToken = PASTE-THE-ACCESS-TOKEN
+GET {{api}}/api/me
+Authorization: Bearer {{accessToken}}
+
+### Edit my profile
+PUT {{api}}/api/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "firstName": "Ada", "lastName": "Okon", "schoolSurname": "Bassey", "bio": "Class of 1998. Physics Club." }
+
+### Refresh (the old refresh token stops working)
+@refreshToken = PASTE-THE-REFRESH-TOKEN
+POST {{api}}/api/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refreshToken}}" }
+
+### Forgot password (always 204)
+POST {{api}}/api/auth/forgot-password
+Content-Type: application/json
+
+{ "email": "ada@example.com" }
+
+### Reset password (the 6-digit code from the email)
+POST {{api}}/api/auth/reset-password
+Content-Type: application/json
+
+{ "email": "ada@example.com", "code": "482913", "newPassword": "a brand new password" }
+
+### Sign out
+POST {{api}}/api/auth/logout
+Content-Type: application/json
+
+{ "refreshToken": "{{refreshToken}}" }
