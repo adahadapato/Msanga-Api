@@ -1,0 +1,11 @@
+@Msanga.Presentation_HostAddress = http://localhost:5288
+
+GET {{Msanga.Presentation_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+GET {{Msanga.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
