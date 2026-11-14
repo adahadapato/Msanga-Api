@@ -29,6 +29,10 @@ public static class RateLimitingSetup
     /// <summary>"I know them": 20 a day per member (Rules.Vouching), so nobody can confirm a crowd of fakes.</summary>
     public const string VouchPolicy = "vouch";
 
+    /// <summary>Find People and people's pages: 60 a minute per member: plenty for a person, too few to copy a whole
+    /// school's list with a script.</summary>
+    public const string PeoplePolicy = "people";
+
     /// <summary>Adds the rate limiter and its policies.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The same service collection, for chaining.</returns>
@@ -42,6 +46,7 @@ public static class RateLimitingSetup
             options.AddPolicy(AccountEmailPolicy, context => FixedWindow(context, 5, TimeSpan.FromMinutes(15)));
             options.AddPolicy(AccountCodePolicy, context => FixedWindow(context, 10, TimeSpan.FromMinutes(5)));
             options.AddPolicy(AddCommunityPolicy, context => FixedWindowPerMember(context, 20, TimeSpan.FromDays(1)));
+            options.AddPolicy(PeoplePolicy, context => FixedWindowPerMember(context, 60, TimeSpan.FromMinutes(1)));
             options.AddPolicy(VouchPolicy, context => FixedWindowPerMember(context, Vouching.MaxVouchesPerDay,
                                                                            TimeSpan.FromDays(1)));
 

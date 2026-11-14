@@ -1,4 +1,5 @@
 using Msanga.Domain.Entities;
+using Msanga.Domain.ValueObjects;
 
 namespace Msanga.Domain.Interfaces;
 
@@ -40,6 +41,36 @@ public interface ICommunityMembershipRepository
     /// <returns>The memberships, read-only.</returns>
     Task<IReadOnlyList<CommunityMembership>> ListConfirmedInSetAsync(Guid communityId, int setYear,
                                                                      CancellationToken cancellationToken = default);
+
+    /// <summary>The schools where a member is confirmed: the only schools they can search (Find People).</summary>
+    /// <param name="memberId">The member.</param>
+    /// <param name="cancellationToken">Cancels the database call.</param>
+    /// <returns>The school Ids.</returns>
+    Task<IReadOnlyList<Guid>> ConfirmedSchoolIdsAsync(Guid memberId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Find People: up to <paramref name="maxPeople"/> people confirmed at any of <paramref name="schoolIds"/> who match
+    /// the filter (A–Z by name), never <paramref name="excludeMemberId"/>. Returns their confirmed memberships at those
+    /// schools (with member and school), so each person can be shown with every school you share.
+    /// </summary>
+    /// <param name="filter">What to look for.</param>
+    /// <param name="schoolIds">The searcher's confirmed schools.</param>
+    /// <param name="excludeMemberId">The searcher.</param>
+    /// <param name="maxPeople">The most people.</param>
+    /// <param name="cancellationToken">Cancels the database call.</param>
+    /// <returns>The memberships, read-only.</returns>
+    Task<IReadOnlyList<CommunityMembership>> FindPeopleAsync(PeopleFilter filter, IReadOnlyCollection<Guid> schoolIds,
+                                                             Guid excludeMemberId, int maxPeople,
+                                                             CancellationToken cancellationToken = default);
+
+    /// <summary>A member's confirmed memberships at some schools (a person's page: the schools you share), with
+    /// member and school.</summary>
+    /// <param name="memberId">The person.</param>
+    /// <param name="schoolIds">The viewer's confirmed schools.</param>
+    /// <param name="cancellationToken">Cancels the database call.</param>
+    /// <returns>The memberships, read-only (none = you share no school: "not found").</returns>
+    Task<IReadOnlyList<CommunityMembership>> ConfirmedAtAsync(Guid memberId, IReadOnlyCollection<Guid> schoolIds,
+                                                              CancellationToken cancellationToken = default);
 
     /// <summary>A member's schools, with each school and its other names, most recent years first.</summary>
     /// <param name="memberId">The member.</param>

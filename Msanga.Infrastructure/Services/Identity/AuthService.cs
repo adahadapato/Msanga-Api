@@ -296,7 +296,8 @@ internal sealed class AuthService(
         return member is null
             ? null
             : new MemberAccount(user.Id, user.Email ?? string.Empty, member.FirstName, member.LastName,
-                                member.SchoolSurname, member.DisplayName, member.Bio, member.PhotoUrl);
+                                member.SchoolSurname, member.DisplayName, member.Bio, member.PhotoUrl,
+                                member.LivesInCity, member.LivesInCountryCode);
     }
 
     /// <summary>Checks a new password against Identity's rules (length etc.); null when it passes.</summary>

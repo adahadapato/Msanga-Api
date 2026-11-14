@@ -20,12 +20,12 @@ namespace Msanga.Persistence.Seeding;
 internal static class DemoMemberSeeder
 {
     /// <summary>The demo members: Hilary from the mock-ups, and classmates to try vouching with (M3c).</summary>
-    private static readonly (string Email, string FirstName, string LastName, string Bio)[] Demos =
+    private static readonly (string Email, string FirstName, string LastName, string Bio, string? City, string? Country)[] Demos =
     [
-        ("hilary@example.com", "Hilary", "Adeyemi", "Reconnecting with old friends and making new memories."),
-        ("emeka@example.com", "Emeka", "Obi", "1998 Set. Still the fastest in the 100 m (I think)."),
-        ("nse@example.com", "Nse", "Udo", "Red House, 1999 Set. Ask me about the inter-house sports."),
-        ("utibe@example.com", "Utibe", "Essien", "Blue House, 1998 Set. Back in Uyo after years in London.")
+        ("hilary@example.com", "Hilary", "Adeyemi", "Reconnecting with old friends and making new memories.", "Lagos", "NG"),
+        ("emeka@example.com", "Emeka", "Obi", "1998 Set. Still the fastest in the 100 m (I think).", null, null),
+        ("nse@example.com", "Nse", "Udo", "Red House, 1999 Set. Ask me about the inter-house sports.", "Uyo", "NG"),
+        ("utibe@example.com", "Utibe", "Essien", "Blue House, 1998 Set. Living in London these days.", "London", "GB")
     ];
 
     /// <summary>Demo members already joined at a school (Joined, not confirmed): school name, years, set, house,
@@ -87,7 +87,17 @@ internal static class DemoMemberSeeder
         foreach (var demo in Demos)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (await users.FindByEmailAsync(demo.Email) is not null) continue;
+            if (await users.FindByEmailAsync(demo.Email) is { } existing)
+            {
+                // Already there: only fill in where they live, if it's missing (M3d added it)
+                var known = await context.Members.FirstOrDefaultAsync(m => m.Id == existing.Id, cancellationToken);
+                if (known is not null && known.LivesInCountryCode is null && demo.Country is not null)
+                {
+                    known.SetWhereYouLive(demo.City, demo.Country);
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+                continue;
+            }
 
             // Account + Member role + member, all or nothing
             await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
@@ -100,6 +110,7 @@ internal static class DemoMemberSeeder
 
             var member = Member.Create(user.Id, demo.FirstName, demo.LastName, schoolSurname: null);
             member.UpdateProfile(demo.FirstName, demo.LastName, schoolSurname: null, demo.Bio);
+            member.SetWhereYouLive(demo.City, demo.Country);
             context.Members.Add(member);
             await context.SaveChangesAsync(cancellationToken);
 

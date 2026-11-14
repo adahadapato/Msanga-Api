@@ -46,26 +46,32 @@ public sealed record CommunityDto(
 /// confirmed you, or nobody has vouched yet). Filled by GET …/membership only.</param>
 /// <param name="CanVouch">True if I may vouch at this school (confirmed, or the school's early days): show "People
 /// waiting". Filled by GET …/membership only.</param>
+/// <param name="SetMates">Up to 3 confirmed members of my set besides me, first names ("Utibe", "Nse"), for Home's
+/// cards; empty unless I'm confirmed there. Filled by GET /api/me/schools only. Never a number (decided 14 Nov 2026).</param>
+/// <param name="MoreSetMates">True if there are more than those ("Utibe, Nse, Ime and others").</param>
 public sealed record MembershipDto(
     CommunityDto School, int FromYear, int ToYear, bool Finished, CommunityMembershipStatus Status,
     int? SetYear, string? SetName, int? SuggestedSetYear, IReadOnlyList<int> SetYearChoices,
     string? House, string? ClassArm, string? Hostel, string? Department,
-    IReadOnlyList<string> VouchedBy, bool CanVouch)
+    IReadOnlyList<string> VouchedBy, bool CanVouch, IReadOnlyList<string> SetMates, bool MoreSetMates)
 {
     /// <summary>Maps a membership and its school (the school's aliases must be loaded).</summary>
     /// <param name="m">The membership.</param>
     /// <param name="school">Its school.</param>
     /// <param name="vouchedBy">Who vouched (GET …/membership); null = not looked up.</param>
     /// <param name="canVouch">May I vouch here (GET …/membership).</param>
+    /// <param name="setMates">A few set-mates' first names (GET /api/me/schools); null = not looked up.</param>
+    /// <param name="moreSetMates">More set-mates than those.</param>
     /// <returns>The DTO.</returns>
     public static MembershipDto From(CommunityMembership m, Community school,
-                                     IReadOnlyList<string>? vouchedBy = null, bool canVouch = false)
+                                     IReadOnlyList<string>? vouchedBy = null, bool canVouch = false,
+                                     IReadOnlyList<string>? setMates = null, bool moreSetMates = false)
     {
         var (first, last) = m.SetYearRange(school.SetNaming);
         return new(CommunityDto.From(school), m.FromYear, m.ToYear, m.Finished, m.Status,
                    m.SetYear, m.SetYear is { } year ? Community.SetName(year) : null,
                    m.SuggestedSetYear(school.SetNaming), Enumerable.Range(first, last - first + 1).ToList(),
-                   m.House, m.ClassArm, m.Hostel, m.Department, vouchedBy ?? [], canVouch);
+                   m.House, m.ClassArm, m.Hostel, m.Department, vouchedBy ?? [], canVouch, setMates ?? [], moreSetMates);
     }
 }
 

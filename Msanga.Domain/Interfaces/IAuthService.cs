@@ -114,4 +114,4 @@ public sealed record AuthTokens(
 /// <param name="PhotoUrl">Their picture; null = initials.</param>
 public sealed record MemberAccount(
     Guid Id, string Email, string FirstName, string LastName, string? SchoolSurname, string DisplayName,
-    string Bio, string? PhotoUrl);
+    string Bio, string? PhotoUrl, string? LivesInCity, string? LivesInCountryCode);

@@ -35,13 +35,16 @@ public sealed record AuthTokensDto(
 /// <param name="MainSet">The set shown under their name, e.g. "Class of 1998"; null until sets exist (M2–M3).</param>
 /// <param name="Bio">About them; empty = none.</param>
 /// <param name="Photo">Their picture's address; null = initials.</param>
+/// <param name="LivesInCity">Where they live now: town or city; null = not given.</param>
+/// <param name="LivesInCountryCode">Where they live now: country, two letters; null = not given.</param>
 public sealed record MemberDto(
     Guid Id, string Email, string FirstName, string LastName, string? SchoolSurname, string DisplayName,
-    string? MainSet, string Bio, string? Photo)
+    string? MainSet, string Bio, string? Photo, string? LivesInCity, string? LivesInCountryCode)
 {
     /// <summary>Maps an account.</summary>
     /// <param name="a">The account.</param>
     /// <returns>The DTO.</returns>
     public static MemberDto From(MemberAccount a) =>
-        new(a.Id, a.Email, a.FirstName, a.LastName, a.SchoolSurname, a.DisplayName, MainSet: null, a.Bio, a.PhotoUrl);
+        new(a.Id, a.Email, a.FirstName, a.LastName, a.SchoolSurname, a.DisplayName, MainSet: null, a.Bio, a.PhotoUrl,
+            a.LivesInCity, a.LivesInCountryCode);
 }

@@ -28,7 +28,7 @@ public static class MemberEndpoints
         me.MapPut("", async (UpdateMyProfileCommand command, ISender sender, CancellationToken ct) =>
                 (await sender.Send(command, ct)).ToHttp())
             .WithName("UpdateMyProfile")
-            .WithSummary("Edit my profile: names, surname at school, a line about me")
+            .WithSummary("Edit my profile: names, surname at school, a line about me, where I live now (optional)")
             .Produces<MemberDto>()
             .ProducesValidationProblem();
 

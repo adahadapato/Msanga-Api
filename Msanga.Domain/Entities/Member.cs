@@ -53,6 +53,39 @@ public sealed class Member : Entity<Guid>
     /// <summary>Their profile picture's address; null = initials. Uploads come later.</summary>
     public string? PhotoUrl { get; private set; }
 
+    /// <summary>Where they live now, the town or city ("London"); null = not given. Optional, shown only to
+    /// schoolmates (decided 14 Nov 2026).</summary>
+    public string? LivesInCity { get; private set; }
+
+    /// <summary>The country they live in now, two letters ("GB"); null = not given.</summary>
+    public string? LivesInCountryCode { get; private set; }
+
+    /// <summary>Longest city name.</summary>
+    public const int CityMaxLength = 100;
+
+    /// <summary>Sets (or clears) where they live now. A city needs its country; a country alone is fine.</summary>
+    /// <param name="city">Town or city; blank = none.</param>
+    /// <param name="countryCode">Two letters, e.g. "NG"; blank = none.</param>
+    /// <exception cref="ArgumentException">A city without a country, a too-long city, or a country that isn't two
+    /// letters.</exception>
+    public void SetWhereYouLive(string? city, string? countryCode)
+    {
+        var town = city?.Trim();
+        var country = countryCode?.Trim().ToUpperInvariant();
+        if (string.IsNullOrEmpty(town)) town = null;
+        if (string.IsNullOrEmpty(country)) country = null;
+
+        if (town?.Length > CityMaxLength)
+            throw new ArgumentException($"Keep it to {CityMaxLength} characters or fewer.", nameof(city));
+        if (country is not null && (country.Length != 2 || !country.All(char.IsAsciiLetterUpper)))
+            throw new ArgumentException("Choose the country.", nameof(countryCode));
+        if (town is not null && country is null)
+            throw new ArgumentException("Choose the country too.", nameof(countryCode));
+
+        LivesInCity = town;
+        LivesInCountryCode = country;
+    }
+
     /// <summary>"Hilary A.": first name and initial, shown around the app.</summary>
     public string DisplayName => $"{FirstName} {char.ToUpperInvariant(LastName[0])}.";
 

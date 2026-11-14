@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M3c-1 vouching (14 Nov 2026)_
+_Last updated: M3d-1 Find People (14 Nov 2026)_
 
 ## Layers
 
@@ -174,9 +174,31 @@ years, house / department** (no photo, email or other schools). Every vouch is k
 | `Presentation/Endpoints/Admin/AdminEndpoints.cs` | `/api/admin` (RequireAdmin): `POST …/confirm` |
 | `UnitTests/Domain/VouchingTests.cs` | 2 confirm, early days, not yourself, confirm once, the email |
 
+## M3d-1: Find People (14 Nov 2026)
+
+Decided 14 Nov 2026: search only schools where **you're confirmed**, finding only people **confirmed** there (name,
+surname at school, school, set, house, country); **where you live now** is optional (city + country, schoolmates
+only); a **person's page** shows name, bio, where they live and the schools you share, and is "not found" for
+anyone else; Home's set cards show **a few names, never numbers**.
+
+| File | What it does |
+|---|---|
+| `Domain/Entities/Member.cs` | + `LivesInCity`, `LivesInCountryCode`, `SetWhereYouLive` (a city needs its country) |
+| `Domain/ValueObjects/PeopleFilter.cs`, `Shared/Errors/PeopleErrors.cs` | what Find People looks for; `ConfirmFirst` (403), `NotFound` (404) |
+| `Domain/Interfaces/ICommunityMembershipRepository.cs` | + `ConfirmedSchoolIdsAsync`, `FindPeopleAsync`, `ConfirmedAtAsync` |
+| `Domain/Interfaces/IAuthService.cs`, `Infrastructure/…/AuthService.cs`, `Application/…/Auth/Dtos/AuthDtos.cs` | `MemberAccount` / `MemberDto` + where you live |
+| `Application/Features/Members/*` | `UpdateMyProfileCommand` + `livesInCity`, `livesInCountryCode` (optional) and their rules |
+| `Application/Features/People/*` | `FindPeopleQuery` (your confirmed schools only; never you; a school that isn't yours finds nobody), `GetPersonQuery` (shared confirmed schools only, with "Confirmed by"), `PersonCardDto`, `PersonPageDto`, `SharedSchoolDto`, the validator |
+| `Application/…/Communities/Queries/MembershipQueries.cs`, `Dtos/CommunityDtos.cs` | My Schools + `setMates` (up to 3 first names of confirmed set-mates) and `moreSetMates` |
+| `Persistence/Repositories/CommunityMembershipRepository.cs` | the people queries (A–Z, at most 50 people, then all the schools you share with each) |
+| `Persistence/Configurations/MemberConfiguration.cs` | migration `WhereYouLive`: the two columns, index by country |
+| `Persistence/Seeding/DemoMemberSeeder.cs` | demo members live in Lagos, Uyo, London (filled in for existing ones too) |
+| `Presentation/Endpoints/People/PeopleEndpoints.cs` | `GET /api/people`, `GET /api/people/{memberId}` (rate limit `people`: 60 a minute per member) |
+| `UnitTests/Application/FindPeopleTests.cs`, `UnitTests/Domain/WhereYouLiveTests.cs` | who may find whom (with a pretend repository); where you live |
+
 ## Coming next
 
-- **M3c-2, web:** "Confirmed by", "People waiting" with I know them, who's here on a set's page.
+- **M3d-2, web:** Find Classmates, a person's page, where you live on Edit profile, Home's real set cards.
 - **M3c:** vouching ("I know them"), Confirmed, limited view until then.
 - **M3d:** Find People within your schools.
 

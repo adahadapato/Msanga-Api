@@ -11,7 +11,10 @@ namespace Msanga.Application.Features.Members.Commands;
 /// <param name="LastName">Last name.</param>
 /// <param name="SchoolSurname">Surname at school; blank = none.</param>
 /// <param name="Bio">About you; blank = none.</param>
-public sealed record UpdateMyProfileCommand(string FirstName, string LastName, string? SchoolSurname, string? Bio)
+/// <param name="LivesInCity">Where you live now, town or city; blank = none (optional, schoolmates only).</param>
+/// <param name="LivesInCountryCode">Where you live now, country (two letters); blank = none.</param>
+public sealed record UpdateMyProfileCommand(string FirstName, string LastName, string? SchoolSurname, string? Bio,
+                                            string? LivesInCity = null, string? LivesInCountryCode = null)
     : IRequest<Result<MemberDto>>;
 
 /// <summary>Handles <see cref="UpdateMyProfileCommand"/>: changes the signed-in member only.</summary>
@@ -31,6 +34,7 @@ public sealed class UpdateMyProfileCommandHandler(
         if (member is null) return AuthErrors.UserNotFound;
 
         member.UpdateProfile(c.FirstName, c.LastName, c.SchoolSurname, c.Bio);
+        member.SetWhereYouLive(c.LivesInCity, c.LivesInCountryCode);
         await unitOfWork.SaveChangesAsync(ct);
 
         return (await auth.GetAccountAsync(userId, ct)).Map(MemberDto.From);

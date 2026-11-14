@@ -92,6 +92,14 @@ Authorization: Bearer {{accessToken}}
 POST {{api}}/api/communities/PASTE-A-SCHOOL-ID/members/PASTE-A-MEMBER-ID/vouch
 Authorization: Bearer {{accessToken}}
 
+### Find People (confirmed members of your confirmed schools)
+GET {{api}}/api/people?search=nse
+Authorization: Bearer {{accessToken}}
+
+### A person's page (paste a memberId)
+GET {{api}}/api/people/PASTE-A-MEMBER-ID
+Authorization: Bearer {{accessToken}}
+
 ### My Schools
 GET {{api}}/api/me/schools
 Authorization: Bearer {{accessToken}}

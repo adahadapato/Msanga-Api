@@ -124,7 +124,9 @@ dotnet user-secrets set "Email:FromAddress" "<an address you verified with Brevo
 | `POST /api/auth/reset-password` | anyone | `{ email, code, newPassword }`; signs out every session |
 | `PUT /api/auth/password` | member | `{ currentPassword, newPassword }`; signs out every session |
 | `GET /api/me` | member | who I am |
-| `PUT /api/me` | member | `{ firstName, lastName, schoolSurname, bio }` |
+| `PUT /api/me` | member | `{ firstName, lastName, schoolSurname, bio, livesInCity, livesInCountryCode }` (where you live: optional, a city needs its country) |
+| `GET /api/people?search=&school=&set=&house=&country=` | confirmed somewhere | Find People: people confirmed at your confirmed schools (name incl. surname at school), A–Z, at most 50; 403 `People.ConfirmFirst`; 60 a minute |
+| `GET /api/people/{memberId}` | same | a person's page: name, bio, where they live, the schools you share (set, house, "Confirmed by"); 404 for anyone else |
 | `GET /api/communities?search=` | member | find a school ("fgc ikot", "UNILAG"); best first, at most 20; fewer than 2 letters → none |
 | `GET /api/communities/{id}` | member | one school; 404 `Community.NotFound` |
 | `GET /api/communities/{id}/membership` | member | have I joined this school? my years; 404 `Community.NotAMember` if not |

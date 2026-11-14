@@ -12,10 +12,13 @@ namespace Msanga.Application.Features.Communities.Queries;
 /// <summary>My Schools: the signed-in member's schools and years, most recent first.</summary>
 public sealed record GetMySchoolsQuery : IRequest<Result<IReadOnlyList<MembershipDto>>>;
 
-/// <summary>Handles <see cref="GetMySchoolsQuery"/>.</summary>
+/// <summary>Handles <see cref="GetMySchoolsQuery"/>, with a few set-mates' names per school (Home's cards).</summary>
 public sealed class GetMySchoolsQueryHandler(ICommunityMembershipRepository memberships, ICurrentUser currentUser)
     : IRequestHandler<GetMySchoolsQuery, Result<IReadOnlyList<MembershipDto>>>
 {
+    /// <summary>How many set-mates' names are shown on a card (then "and others").</summary>
+    public const int SetMatesShown = 3;
+
     /// <inheritdoc />
     public async Task<Result<IReadOnlyList<MembershipDto>>> Handle(GetMySchoolsQuery query, CancellationToken ct)
     {
@@ -23,7 +26,24 @@ public sealed class GetMySchoolsQueryHandler(ICommunityMembershipRepository memb
             ?? throw new InvalidOperationException("This action requires a signed-in user.");
 
         var mine = await memberships.ListForMemberAsync(memberId, ct);
-        return Result.Success<IReadOnlyList<MembershipDto>>(mine.Select(m => MembershipDto.From(m, m.Community)).ToList());
+        var result = new List<MembershipDto>();
+        foreach (var m in mine)
+        {
+            // A few set-mates' names for Home's cards: only where I'm confirmed and have a set
+            List<string> mates = [];
+            if (m.Status == CommunityMembershipStatus.Confirmed && m.SetYear is { } set)
+            {
+                mates = (await memberships.ListConfirmedInSetAsync(m.CommunityId, set, ct))
+                        .Where(x => x.MemberId != memberId)
+                        .Select(x => x.Member.FirstName)
+                        .ToList();
+            }
+
+            result.Add(MembershipDto.From(m, m.Community, setMates: mates.Take(SetMatesShown).ToList(),
+                                          moreSetMates: mates.Count > SetMatesShown));
+        }
+
+        return Result.Success<IReadOnlyList<MembershipDto>>(result);
     }
 }
 

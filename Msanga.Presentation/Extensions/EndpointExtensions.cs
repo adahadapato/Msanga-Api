@@ -3,6 +3,7 @@ using Msanga.Presentation.Endpoints.Hello;
 using Msanga.Presentation.Endpoints.Admin;
 using Msanga.Presentation.Endpoints.Communities;
 using Msanga.Presentation.Endpoints.Members;
+using Msanga.Presentation.Endpoints.People;
 
 namespace Msanga.Presentation.Extensions;
 
@@ -20,6 +21,7 @@ public static class EndpointExtensions
         api.MapAuthEndpoints();              // /api/auth/…
         api.MapMemberEndpoints();            // /api/me
         api.MapCommunityEndpoints();         // /api/communities
+        api.MapPeopleEndpoints();            // /api/people
         api.MapAdminEndpoints();             // /api/admin (admins only)
 
         app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))

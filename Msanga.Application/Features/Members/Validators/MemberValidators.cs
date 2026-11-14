@@ -18,5 +18,13 @@ public sealed class UpdateMyProfileCommandValidator : AbstractValidator<UpdateMy
         RuleFor(x => x.SchoolSurname).MaximumLength(Member.NameMaxLength).WithMessage(tooLong);
         RuleFor(x => x.Bio).MaximumLength(Member.BioMaxLength)
                            .WithMessage($"Keep it to {Member.BioMaxLength} characters or fewer.");
+
+        // Where you live now (optional): a city needs its country
+        RuleFor(x => x.LivesInCity).MaximumLength(Member.CityMaxLength)
+                                   .WithMessage($"Keep it to {Member.CityMaxLength} characters or fewer.");
+        RuleFor(x => x.LivesInCountryCode).Matches("^[A-Za-z]{2}$").When(x => !string.IsNullOrWhiteSpace(x.LivesInCountryCode))
+                                          .WithMessage("Choose the country.");
+        RuleFor(x => x.LivesInCountryCode).NotEmpty().When(x => !string.IsNullOrWhiteSpace(x.LivesInCity))
+                                          .WithMessage("Choose the country too.");
     }
 }

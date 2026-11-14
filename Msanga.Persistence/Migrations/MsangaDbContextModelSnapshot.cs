@@ -16,7 +16,7 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261114031909_Vouches";
+    public override string LastMigrationId => "20261114035126_WhereYouLive";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -393,6 +393,16 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .HasMaxLength(100)
                     .HasColumnType("nvarchar(100)");
 
+                b.Property<string>("LivesInCity")
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
+
+                b.Property<string>("LivesInCountryCode")
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasColumnType("char(2)")
+                    .IsFixedLength();
+
                 b.Property<string>("PhotoUrl")
                     .HasMaxLength(500)
                     .HasColumnType("nvarchar(500)");
@@ -405,6 +415,8 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("datetime2");
 
                 b.HasKey("Id");
+
+                b.HasIndex("LivesInCountryCode");
 
                 b.HasIndex("SchoolSurname");
 
