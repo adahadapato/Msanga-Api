@@ -22,6 +22,11 @@ internal sealed class CommunityRepository(MsangaDbContext context) : ICommunityR
         context.Communities.Include(c => c.Aliases).FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
     /// <inheritdoc />
+    public Task<Community?> FindBySearchKeyAsync(string searchKey, CancellationToken cancellationToken = default) =>
+        context.Communities.AsNoTracking().Include(c => c.Aliases)
+               .FirstOrDefaultAsync(c => c.SearchKey == searchKey, cancellationToken);
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Community>> SearchAsync(IReadOnlyList<string> words, int max,
                                                             CancellationToken cancellationToken = default)
     {

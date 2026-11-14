@@ -52,6 +52,20 @@ Authorization: Bearer {{accessToken}}
 GET {{api}}/api/communities/PASTE-A-SCHOOL-ID
 Authorization: Bearer {{accessToken}}
 
+### Add a school (201; or 409 Community.LooksLike / Community.AlreadyListed with "suggestions")
+POST {{api}}/api/communities
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "name": "Holy Child College", "level": "Secondary", "town": "Ikoyi", "state": "Lagos", "countryCode": "NG", "otherNames": ["HCC"] }
+
+### Already there: "Government College" in Umuahia → 409 AlreadyListed, even with addAnyway. ("Kings College" in "Lagos Island" → 409 LooksLike; add "addAnyway": true to add it anyway)
+POST {{api}}/api/communities
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "name": "Government College", "level": "Secondary", "town": "Umuahia", "state": "Abia", "countryCode": "NG", "addAnyway": true }
+
 ### Refresh (the old refresh token stops working)
 @refreshToken = PASTE-THE-REFRESH-TOKEN
 POST {{api}}/api/auth/refresh

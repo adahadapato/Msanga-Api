@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M2a-2 schools and search (13 Nov 2026)_
+_Last updated: M2b adding a school (14 Nov 2026)_
 
 ## Layers
 
@@ -93,9 +93,25 @@ country, Nigeria first; the starting list is the pilot schools, then members add
 | `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | `GET /api/communities?search=`, `GET /api/communities/{id}`, members only |
 | `UnitTests/Domain/CommunityTests.cs` | the town in the key once, other names not repeated, tidy places, bad details refused |
 
+## M2b: adding a school (14 Nov 2026)
+
+| File | What it does |
+|---|---|
+| `Domain/Constants/NigerianStates.cs` | the 36 states and the FCT; `Find` tidies what was sent ("lagos state" → "Lagos", "FCT"/"Abuja" → the FCT) |
+| `Domain/Shared/Errors/CommunityErrors.cs` | + `AlreadyListed`, `LooksLike` (409) |
+| `Domain/Interfaces/ICommunityRepository.cs` | + `FindBySearchKeyAsync` (exact name + town) |
+| `Application/Features/Communities/Commands/AddCommunityCommand.cs` | 1. same key already there → AlreadyListed (no way round it); 2. unless `addAnyway`, lookalikes (search by the new NAME without the town, then by each other name; up to 5) → LooksLike; 3. add as New with who added it. `AddCommunityOutcome` says which |
+| `Application/Features/Communities/Validators/CommunityValidators.cs` | + `AddCommunityCommandValidator`: name, level, town, two-letter country; Nigeria → one of the states; up to 5 other names |
+| `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | + `POST /api/communities`: 201 with `Location`, or 409 ProblemDetails with `suggestions` |
+| `Presentation/Extensions/ResultExtensions.cs` | `ToProblem` can add fields to the body (`suggestions`) |
+| `Presentation/Settings/RateLimiting/RateLimitingSetup.cs` | + `add-community`: 20 tries a day per member |
+| `UnitTests/Domain/NigerianStatesTests.cs`, `UnitTests/Application/AddCommunityCommandValidatorTests.cs` | the state list; what the form must send |
+
 ## Coming next
 
-- **M2b:** `POST /api/communities` with "Did you mean…?" (409 with suggestions) and a rate limit.
+- **M2c, web:** Find your school (live search, results, the school's page).
+- **M2d, web:** Add your school (the form, "Did you mean…?"); Find Classmates / My Schools stop being "coming soon".
+- **Later:** lookalikes that also catch spelling mistakes ("Umuhia"); admin review of new schools (M7).
 
 - **More tests:** AuthService against SQLite or Testcontainers, endpoints with `WebApplicationFactory`.
 - **Web app:** "Check your email" and "Choose a new password" become code boxes (`inputmode="numeric"`,

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Fast tests of Msanga's rules: no database, no web server. Run with `dotnet test`. -->
+  <!-- Fast tests of Msanga's rules (Domain) and validators (Application): no database, no web server. `dotnet test`. -->
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Msanga.Domain\Msanga.Domain.csproj" />
+    <ProjectReference Include="..\Msanga.Application\Msanga.Application.csproj" />
   </ItemGroup>
 
 </Project>

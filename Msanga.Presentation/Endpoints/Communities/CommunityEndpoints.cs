@@ -1,12 +1,14 @@
 using MediatR;
+using Msanga.Application.Features.Communities.Commands;
 using Msanga.Application.Features.Communities.Dtos;
 using Msanga.Application.Features.Communities.Queries;
 using Msanga.Domain.Constants;
 using Msanga.Presentation.Extensions;
+using Msanga.Presentation.Settings.RateLimiting;
 
 namespace Msanga.Presentation.Endpoints.Communities;
 
-/// <summary><c>/api/communities</c>: finding a school and opening its page. Signed-in members only.</summary>
+/// <summary><c>/api/communities</c>: finding a school, opening its page, adding one. Signed-in members only.</summary>
 public static class CommunityEndpoints
 {
     /// <summary>Maps the routes.</summary>
@@ -30,6 +32,24 @@ public static class CommunityEndpoints
             .WithSummary("One school, for its page")
             .Produces<CommunityDto>()
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        communities.MapPost("", async (AddCommunityCommand command, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(command, ct);
+                if (result.IsFailure) return result.Error.ToProblem();
+
+                var outcome = result.Value;
+                return outcome.Added is { } added
+                    ? Results.Created($"/api/communities/{added.Id}", added)
+                    : outcome.Problem!.ToProblem(new Dictionary<string, object?> { ["suggestions"] = outcome.Suggestions });
+            })
+            .WithName("AddCommunity")
+            .WithSummary("Add a school (marked new). 409 Community.AlreadyListed or Community.LooksLike, with " +
+                         "\"suggestions\"; send again with addAnyway: true if it's none of them")
+            .Produces<CommunityDto>(StatusCodes.Status201Created)
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireRateLimiting(RateLimitingSetup.AddCommunityPolicy);
 
         return api;
     }

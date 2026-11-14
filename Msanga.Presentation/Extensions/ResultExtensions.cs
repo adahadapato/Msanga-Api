@@ -27,7 +27,8 @@ internal static class ResultExtensions
 
     /// <summary>An error as ProblemDetails with the matching status code.</summary>
     /// <param name="error">The error.</param>
-    public static IResult ToProblem(this Error error)
+    /// <param name="extra">More fields for the body, e.g. <c>suggestions</c> for "Did you mean…?"; null = none.</param>
+    public static IResult ToProblem(this Error error, IReadOnlyDictionary<string, object?>? extra = null)
     {
         var (status, title) = error.Type switch
         {
@@ -39,10 +40,14 @@ internal static class ResultExtensions
             _ => (StatusCodes.Status500InternalServerError, "Something went wrong")
         };
 
+        var extensions = new Dictionary<string, object?> { ["code"] = error.Code };
+        foreach (var (name, value) in extra ?? new Dictionary<string, object?>())
+            extensions[name] = value;
+
         return Results.Problem(
             statusCode: status,
             title: title,
             detail: error.Message,
-            extensions: new Dictionary<string, object?> { ["code"] = error.Code });
+            extensions: extensions);
     }
 }

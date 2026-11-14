@@ -16,6 +16,13 @@ public interface ICommunityRepository
     /// <returns>The school, or null.</returns>
     Task<Community?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    /// <summary>The school with exactly this search key (name and town), with its other names: "is it already on
+    /// Msanga?".</summary>
+    /// <param name="searchKey">A <see cref="Community.SearchKey"/>.</param>
+    /// <param name="cancellationToken">Cancels the database call.</param>
+    /// <returns>The school, or null.</returns>
+    Task<Community?> FindBySearchKeyAsync(string searchKey, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Schools where every search word is the start of a word in the school's key or one of its other names' keys.
     /// Best first: a key that starts with the whole search, then Listed before New, then A–Z.

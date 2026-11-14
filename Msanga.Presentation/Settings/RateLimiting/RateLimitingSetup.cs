@@ -1,11 +1,13 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Msanga.Infrastructure.Settings.Identity;
 
 namespace Msanga.Presentation.Settings.RateLimiting;
 
 /// <summary>
-/// Limits on the public account endpoints robots like most. Per connection (IP address), in memory: a restart
-/// resets them. On top of Identity's own lockout after wrong passwords.
+/// Limits on the endpoints robots like most: the public account endpoints, per connection (IP address), on top of
+/// Identity's own lockout after wrong passwords; and adding schools, per member. In memory: a restart resets them.
 /// </summary>
 public static class RateLimitingSetup
 {
@@ -19,6 +21,10 @@ public static class RateLimitingSetup
     /// <summary>Typing an emailed code (confirm email, reset password): on top of the 5 tries each code allows.</summary>
     public const string AccountCodePolicy = "account-code";
 
+    /// <summary>Adding a school: 20 tries a day per member (a "Did you mean…?" and its "add anyway" are two), so
+    /// nobody can flood the list.</summary>
+    public const string AddCommunityPolicy = "add-community";
+
     /// <summary>Adds the rate limiter and its policies.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The same service collection, for chaining.</returns>
@@ -31,6 +37,7 @@ public static class RateLimitingSetup
             options.AddPolicy(SignInPolicy, context => FixedWindow(context, 20, TimeSpan.FromMinutes(5)));
             options.AddPolicy(AccountEmailPolicy, context => FixedWindow(context, 5, TimeSpan.FromMinutes(15)));
             options.AddPolicy(AccountCodePolicy, context => FixedWindow(context, 10, TimeSpan.FromMinutes(5)));
+            options.AddPolicy(AddCommunityPolicy, context => FixedWindowPerMember(context, 20, TimeSpan.FromDays(1)));
 
             options.OnRejected = async (context, ct) =>
             {
@@ -48,6 +55,14 @@ public static class RateLimitingSetup
 
         return services;
     }
+
+    /// <summary>Per signed-in member (the access token's user Id); per IP address if there isn't one.</summary>
+    private static RateLimitPartition<string> FixedWindowPerMember(HttpContext context, int permits, TimeSpan window) =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.User.FindFirstValue(JwtClaimNames.UserId) is { } userId
+                ? $"member:{userId}"
+                : context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = permits, Window = window, QueueLimit = 0 });
 
     private static RateLimitPartition<string> FixedWindow(HttpContext context, int permits, TimeSpan window) =>
         RateLimitPartition.GetFixedWindowLimiter(
