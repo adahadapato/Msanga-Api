@@ -39,6 +39,9 @@ public sealed class MsangaDbContext(DbContextOptions<MsangaDbContext> options)
     /// <summary>Who was a student at which school, and when (school first, then the year).</summary>
     public DbSet<CommunityMembership> CommunityMemberships => Set<CommunityMembership>();
 
+    /// <summary>"I know them": who vouched for whom at which school.</summary>
+    public DbSet<Vouch> Vouches => Set<Vouch>();
+
     // ---------- Sign-in ----------
 
     /// <summary>Hashed refresh tokens, managed by the Identity services.</summary>

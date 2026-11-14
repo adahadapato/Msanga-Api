@@ -84,6 +84,14 @@ Content-Type: application/json
 GET {{api}}/api/communities/PASTE-A-SCHOOL-ID/sets/1998
 Authorization: Bearer {{accessToken}}
 
+### People waiting to be confirmed (try as Hilary after joining FGCIE)
+GET {{api}}/api/communities/PASTE-A-SCHOOL-ID/waiting
+Authorization: Bearer {{accessToken}}
+
+### I know them (paste a memberId from the waiting list)
+POST {{api}}/api/communities/PASTE-A-SCHOOL-ID/members/PASTE-A-MEMBER-ID/vouch
+Authorization: Bearer {{accessToken}}
+
 ### My Schools
 GET {{api}}/api/me/schools
 Authorization: Bearer {{accessToken}}

@@ -64,6 +64,9 @@ public sealed class CommunityMembership : Entity<Guid>
     /// <summary>The school.</summary>
     public Guid CommunityId { get; private set; }
 
+    /// <summary>The member (loaded for lists of people: waiting, a set's members).</summary>
+    public Member Member { get; private set; } = null!;
+
     /// <summary>The school itself (loaded for "My Schools").</summary>
     public Community Community { get; private set; } = null!;
 
@@ -78,6 +81,19 @@ public sealed class CommunityMembership : Entity<Guid>
 
     /// <summary>Joined, or Confirmed (M3c).</summary>
     public CommunityMembershipStatus Status { get; private set; }
+
+    /// <summary>When they became Confirmed (UTC); null while Joined.</summary>
+    public DateTime? ConfirmedAt { get; private set; }
+
+    /// <summary>Confirmed: two classmates vouched (<c>Rules.Vouching</c>), or an admin confirmed them. Once confirmed,
+    /// calling it again changes nothing.</summary>
+    /// <param name="now">When (UTC).</param>
+    public void Confirm(DateTime now)
+    {
+        if (Status == CommunityMembershipStatus.Confirmed) return;
+        Status = CommunityMembershipStatus.Confirmed;
+        ConfirmedAt = now;
+    }
 
     /// <summary>Your set's year ("1998 Set"); null until you choose it.</summary>
     public int? SetYear { get; private set; }

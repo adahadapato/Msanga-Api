@@ -83,6 +83,9 @@ public static class AppSettings
 
         /// <summary>Create the starting list of schools at start-up (true only in appsettings.Development.json).</summary>
         public const string CommunitiesEnabled = "SeedData:CommunitiesEnabled";
+
+        /// <summary>The account that gets the Admin role at start-up (User Secrets; any environment).</summary>
+        public const string AdminEmail = "SeedData:AdminEmail";
     }
 
     // ==================== Identity ====================

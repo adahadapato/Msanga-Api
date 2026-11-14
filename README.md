@@ -64,6 +64,17 @@ Restart the API: the console says "Seeded demo member hilary@example.com". She's
 alone. This only happens where `SeedData:DemoMembersEnabled` is true, i.e. `appsettings.Development.json`; the live
 server never has demo members.
 
+**Demo classmates for vouching (M3c):** Nse Udo (`nse@example.com`) and Utibe Essien (`utibe@example.com`), same
+password, are created already **joined** at FGC Ikot Ekpene (1999 Set, 1998 Set). Join FGCIE as Hilary, then vouch:
+while a school has fewer than 3 confirmed members, joined members may vouch for each other.
+
+**Admin (any environment):** the account in `SeedData:AdminEmail` gets the Admin role at start-up (sign in again
+afterwards so your token carries it):
+
+```powershell
+dotnet user-secrets set "SeedData:AdminEmail" "your own sign-in email"
+```
+
 The same goes for the **starting list of schools** (`SeedData:CommunitiesEnabled`): six Nigerian schools with their
 other names (FGCIE, GCU, KC, UniUyo, UNILAG, Akwapoly), so "Find your school" has something to find.
 
@@ -122,6 +133,9 @@ dotnet user-secrets set "Email:FromAddress" "<an address you verified with Brevo
 | `DELETE /api/communities/{id}/membership` | member | leave the school (204) |
 | `PUT /api/communities/{id}/membership/set` | member | your set and details: `{ setYear, house, classArm, hostel, department }`; 400 `Community.SetOutOfRange` if the set doesn't fit your years |
 | `GET /api/communities/{id}/sets/{year}` | member of the school | a set's page ("1998 Set"); 403 `Community.MembersOnly` otherwise |
+| `GET /api/communities/{id}/waiting` | confirmed member (or joined, in a school's early days) | people waiting to be confirmed: name, set, years, house / department |
+| `POST /api/communities/{id}/members/{memberId}/vouch` | same | "I know them"; the second vouch confirms them and emails them; 20 a day |
+| `POST /api/admin/communities/{id}/members/{memberId}/confirm` | admin | confirm someone directly (204) |
 | `GET /api/me/schools` | member | My Schools: my schools and years, most recent first |
 | `POST /api/communities` | member | `{ name, level, town, state, countryCode, otherNames, addAnyway }` → 201, marked new; 409 `Community.AlreadyListed` (same name and town) or `Community.LooksLike` (send again with `addAnyway: true`), both with `suggestions`; 20 tries a day |
 

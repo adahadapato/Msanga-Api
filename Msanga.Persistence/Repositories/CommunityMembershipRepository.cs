@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Msanga.Domain.Entities;
+using Msanga.Domain.Enums;
 using Msanga.Domain.Interfaces;
 
 namespace Msanga.Persistence.Repositories;
@@ -17,8 +18,33 @@ internal sealed class CommunityMembershipRepository(MsangaDbContext context) : I
     public Task<CommunityMembership?> GetAsync(Guid memberId, Guid communityId,
                                                CancellationToken cancellationToken = default) =>
         context.CommunityMemberships
+               .Include(m => m.Member)
                .Include(m => m.Community).ThenInclude(c => c.Aliases)
                .FirstOrDefaultAsync(m => m.MemberId == memberId && m.CommunityId == communityId, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<int> CountConfirmedAsync(Guid communityId, CancellationToken cancellationToken = default) =>
+        context.CommunityMemberships.CountAsync(
+            m => m.CommunityId == communityId && m.Status == CommunityMembershipStatus.Confirmed, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<CommunityMembership>> ListWaitingAsync(
+        Guid communityId, CancellationToken cancellationToken = default) =>
+        await context.CommunityMemberships.AsNoTracking()
+                     .Include(m => m.Member)
+                     .Where(m => m.CommunityId == communityId && m.Status == CommunityMembershipStatus.Joined)
+                     .OrderBy(m => m.SetYear ?? m.ToYear).ThenBy(m => m.Member.FirstName).ThenBy(m => m.Member.LastName)
+                     .ToListAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<CommunityMembership>> ListConfirmedInSetAsync(
+        Guid communityId, int setYear, CancellationToken cancellationToken = default) =>
+        await context.CommunityMemberships.AsNoTracking()
+                     .Include(m => m.Member)
+                     .Where(m => m.CommunityId == communityId && m.SetYear == setYear
+                              && m.Status == CommunityMembershipStatus.Confirmed)
+                     .OrderBy(m => m.Member.FirstName).ThenBy(m => m.Member.LastName)
+                     .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<CommunityMembership>> ListForMemberAsync(

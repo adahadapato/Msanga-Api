@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         // 1. The clock: .NET's built-in TimeProvider (FakeTimeProvider in tests)
         services.AddSingleton(TimeProvider.System);
+        services.AddScoped<Features.Communities.ConfirmedEmail>();   // "You're confirmed" (vouching, admin)
 
         // 2. Validators: without this, ValidationBehavior finds none and NO validation runs
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);

@@ -33,7 +33,9 @@ public sealed class CommunityMembershipConfiguration : EntityConfiguration<Commu
         builder.Property(m => m.Hostel).HasMaxLength(CommunityMembership.DetailMaxLength);
         builder.Property(m => m.Department).HasMaxLength(CommunityMembership.DetailMaxLength);
 
-        builder.HasOne<Member>()
+        builder.Property(m => m.ConfirmedAt);
+
+        builder.HasOne(m => m.Member)
                .WithMany()
                .HasForeignKey(m => m.MemberId)
                .OnDelete(DeleteBehavior.Cascade);
@@ -49,5 +51,8 @@ public sealed class CommunityMembershipConfiguration : EntityConfiguration<Commu
         // A school's members by year and by set (M3d Find People, set pages)
         builder.HasIndex(m => new { m.CommunityId, m.ToYear });
         builder.HasIndex(m => new { m.CommunityId, m.SetYear });
+
+        // Who's waiting / how many are confirmed at a school
+        builder.HasIndex(m => new { m.CommunityId, m.Status });
     }
 }

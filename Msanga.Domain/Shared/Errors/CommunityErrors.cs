@@ -25,6 +25,26 @@ public static class CommunityErrors
     /// <returns>The error (400).</returns>
     public static Error SetOutOfRange(string message) => Error.Validation("Community.SetOutOfRange", message);
 
+    /// <summary>Vouching: there's no such person at this school.</summary>
+    public static readonly Error PersonNotFound = Error.NotFound(
+        "Community.PersonNotFound", "We couldn't find that person at this school.");
+
+    /// <summary>Vouching for yourself.</summary>
+    public static readonly Error CannotVouchForYourself = Error.Validation(
+        "Community.CannotVouchForYourself", "You can't vouch for yourself.");
+
+    /// <summary>Vouching (or seeing who's waiting) before you're confirmed, once the school's early days are over.</summary>
+    public static readonly Error NotConfirmedYet = Error.Forbidden(
+        "Community.NotConfirmedYet", "You can vouch for others once classmates have confirmed you.");
+
+    /// <summary>Vouching twice for the same person.</summary>
+    public static readonly Error AlreadyVouched = Error.Conflict(
+        "Community.AlreadyVouched", "You've already said you know them.");
+
+    /// <summary>Vouching for someone who's already confirmed.</summary>
+    public static readonly Error AlreadyConfirmed = Error.Conflict(
+        "Community.AlreadyConfirmed", "They're already confirmed. Thank you!");
+
     /// <summary>Adding a school: one with the same name and town is already on Msanga (however it's written).
     /// No "add anyway": two copies would split its classmates.</summary>
     public static readonly Error AlreadyListed = Error.Conflict(

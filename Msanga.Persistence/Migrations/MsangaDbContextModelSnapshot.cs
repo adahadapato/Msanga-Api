@@ -16,7 +16,7 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261114023853_Sets";
+    public override string LastMigrationId => "20261114031909_Vouches";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -295,6 +295,9 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                 b.Property<Guid>("CommunityId")
                     .HasColumnType("uniqueidentifier");
 
+                b.Property<DateTime?>("ConfirmedAt")
+                    .HasColumnType("datetime2");
+
                 b.Property<DateTime>("CreatedAt")
                     .HasColumnType("datetime2");
 
@@ -342,6 +345,8 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                 b.HasKey("Id");
 
                 b.HasIndex("CommunityId", "SetYear");
+
+                b.HasIndex("CommunityId", "Status");
 
                 b.HasIndex("CommunityId", "ToYear");
 
@@ -442,6 +447,52 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("UserId", "RevokedAtUtc");
 
                 b.ToTable("RefreshTokens");
+            });
+
+        modelBuilder.Entity("Msanga.Domain.Entities.Vouch", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<Guid>("CommunityId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<bool>("IsDeleted")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("bit")
+                    .HasDefaultValue(false);
+
+                b.Property<DateTime?>("UpdatedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<Guid>("VoucheeId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<Guid>("VoucherId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.HasKey("Id");
+
+                b.HasIndex("VoucheeId");
+
+                b.HasIndex("VoucherId");
+
+                b.HasIndex("CommunityId", "VoucheeId");
+
+                b.HasIndex("CommunityId", "VoucherId", "VoucheeId")
+                    .IsUnique()
+                    .HasFilter("[IsDeleted] = 0");
+
+                b.ToTable("Vouches", t =>
+                    {
+                        t.HasCheckConstraint("CK_Vouches_NotYourself", "[VoucherId] <> [VoucheeId]");
+                    });
             });
 
         modelBuilder.Entity("Msanga.Persistence.Configurations.Identity.ApplicationRole", b =>
@@ -622,13 +673,15 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
-                b.HasOne("Msanga.Domain.Entities.Member", null)
+                b.HasOne("Msanga.Domain.Entities.Member", "Member")
                     .WithMany()
                     .HasForeignKey("MemberId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
                 b.Navigation("Community");
+
+                b.Navigation("Member");
             });
 
         modelBuilder.Entity("Msanga.Domain.Entities.Member", b =>
@@ -646,6 +699,27 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .WithMany()
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Msanga.Domain.Entities.Vouch", b =>
+            {
+                b.HasOne("Msanga.Domain.Entities.Community", null)
+                    .WithMany()
+                    .HasForeignKey("CommunityId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("Msanga.Domain.Entities.Member", null)
+                    .WithMany()
+                    .HasForeignKey("VoucheeId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("Msanga.Domain.Entities.Member", null)
+                    .WithMany()
+                    .HasForeignKey("VoucherId")
+                    .OnDelete(DeleteBehavior.NoAction)
                     .IsRequired();
             });
 

@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M3b-1 your set (14 Nov 2026)_
+_Last updated: M3c-1 vouching (14 Nov 2026)_
 
 ## Layers
 
@@ -149,9 +149,34 @@ the first thing that hangs off a set, e.g. its chat).
 | `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | + `PUT …/membership/set` (`MySetBody`), `GET /api/communities/{id}/sets/{year}` |
 | `UnitTests/Domain/SetTests.cs`, `UnitTests/Application/SchoolYearsValidatorTests.cs` | suggestions, ranges, choosing, years changed, details, set-page years |
 
+## M3c-1: vouching (14 Nov 2026)
+
+Decided 14 Nov 2026: **2 vouches** ("I know them") from confirmed members of the school, any year, confirm someone;
+in a school's **early days** (fewer than 3 confirmed) joined members may vouch too; an **admin** can confirm directly;
+**who vouched is shown** ("Confirmed by Nse U. and Utibe E."); confirmed members see people waiting: **name, set,
+years, house / department** (no photo, email or other schools). Every vouch is kept (tracing fakes, M7).
+
+| File | What it does |
+|---|---|
+| `Domain/Rules/Vouching.cs` | the rules in one place: `VouchesToConfirm` (2), `EarlyDaysConfirmedMembers` (3), `MaxVouchesPerDay` (20), `MayVouch`, `Confirms`, `InEarlyDays` |
+| `Domain/Entities/Vouch.cs` | who vouched, for whom, at which school (never for yourself) |
+| `Domain/Entities/CommunityMembership.cs` | + `Member` (navigation), `ConfirmedAt`, `Confirm(now)` (once) |
+| `Domain/Interfaces/IVouchRepository.cs`, `ICommunityMembershipRepository.cs` | + vouches (exists, count, voucher names, whom I vouched for); + count confirmed, waiting list, a set's confirmed members; `GetAsync` loads the member too |
+| `Domain/Shared/Errors/CommunityErrors.cs` | + `PersonNotFound`, `CannotVouchForYourself`, `NotConfirmedYet` (403), `AlreadyVouched`, `AlreadyConfirmed` (409) |
+| `Application/Features/Communities/Commands/VouchCommands.cs` | `VouchCommand` (checks in order, the second vouch confirms + emails), `AdminConfirmMemberCommand` |
+| `Application/Features/Communities/Queries/MembershipQueries.cs` | `GetWaitingQuery`; `GetMyMembershipQuery` + `vouchedBy`, `canVouch`; `GetSetQuery` + who's here (confirmed members only) |
+| `Application/Features/Communities/ConfirmedEmail.cs` | "You're confirmed at …, confirmed by …" (no links); a failure is logged, never undoes it |
+| `Application/Features/Communities/Dtos/CommunityDtos.cs` | + `PersonDto` (what schoolmates see), `VouchOutcomeDto`; `MembershipDto` + `vouchedBy`, `canVouch`; `SetDto` + `canSeeMembers`, `members` |
+| `Persistence/Configurations/VouchConfiguration.cs` | table `Vouches` (migration `Vouches`): one per voucher + person + school, never yourself (check constraint); kept if the voucher's account goes (NoAction: account deletion in M8 must handle it) |
+| `Persistence/Repositories/VouchRepository.cs` | the queries above |
+| `Persistence/Seeding/AdminSeeder.cs`, `DemoMemberSeeder.cs`, `DbSeeder.cs` | step 5: Nse and Utibe joined at FGCIE (development); step 6: `SeedData:AdminEmail` gets the Admin role (any environment) |
+| `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | + `GET …/waiting`, `POST …/members/{memberId}/vouch` (rate limit `vouch`) |
+| `Presentation/Endpoints/Admin/AdminEndpoints.cs` | `/api/admin` (RequireAdmin): `POST …/confirm` |
+| `UnitTests/Domain/VouchingTests.cs` | 2 confirm, early days, not yourself, confirm once, the email |
+
 ## Coming next
 
-- **M3b-2, web:** "Your set" on the school's page (choose, details), the set's page, My Schools shows your set.
+- **M3c-2, web:** "Confirmed by", "People waiting" with I know them, who's here on a set's page.
 - **M3c:** vouching ("I know them"), Confirmed, limited view until then.
 - **M3d:** Find People within your schools.
 

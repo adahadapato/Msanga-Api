@@ -104,12 +104,35 @@ public static class CommunityEndpoints
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        // ---------- Vouching: "I know them" ----------
+
+        communities.MapGet("/{id:guid}/waiting", async (Guid id, ISender sender, CancellationToken ct) =>
+                (await sender.Send(new GetWaitingQuery(id), ct)).ToHttp())
+            .WithName("GetWaiting")
+            .WithSummary("People waiting to be confirmed here (name, set, years, house): for those who may vouch; " +
+                         "403 Community.MembersOnly / Community.NotConfirmedYet otherwise")
+            .Produces<IReadOnlyList<PersonDto>>()
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        communities.MapPost("/{id:guid}/members/{memberId:guid}/vouch",
+                async (Guid id, Guid memberId, ISender sender, CancellationToken ct) =>
+                    (await sender.Send(new VouchCommand(id, memberId), ct)).ToHttp())
+            .WithName("Vouch")
+            .WithSummary("I know them: the second vouch confirms them (and emails them). 20 a day.")
+            .Produces<VouchOutcomeDto>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireRateLimiting(RateLimitingSetup.VouchPolicy);
+
         // ---------- A set's page (members of the school only) ----------
 
         communities.MapGet("/{id:guid}/sets/{year:int}", async (Guid id, int year, ISender sender, CancellationToken ct) =>
                 (await sender.Send(new GetSetQuery(id, year), ct)).ToHttp())
             .WithName("GetSet")
-            .WithSummary("A set's page (\"1998 Set\"); 403 Community.MembersOnly if you haven't joined the school")
+            .WithSummary("A set's page (\"1998 Set\") and, for confirmed members, who's in it; " +
+                         "403 Community.MembersOnly if you haven't joined the school")
             .Produces<SetDto>()
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status403Forbidden)

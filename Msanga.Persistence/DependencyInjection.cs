@@ -58,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IMemberRepository, MemberRepository>();                                     // 5
         services.AddScoped<ICommunityRepository, CommunityRepository>();
         services.AddScoped<ICommunityMembershipRepository, CommunityMembershipRepository>();
+        services.AddScoped<IVouchRepository, VouchRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAccountCodeRepository, AccountCodeRepository>();
 
@@ -68,6 +69,7 @@ public static class DependencyInjection
             settings.DemoPassword = configuration[AppSettings.SeedData.DemoPassword] ?? string.Empty;
             settings.CommunitiesEnabled = bool.TryParse(configuration[AppSettings.SeedData.CommunitiesEnabled],
                                                         out var schools) && schools;
+            settings.AdminEmail = configuration[AppSettings.SeedData.AdminEmail] ?? string.Empty;
         });
 
         return services;

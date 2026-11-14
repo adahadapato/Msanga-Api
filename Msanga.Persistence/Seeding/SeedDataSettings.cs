@@ -17,4 +17,8 @@ public sealed class SeedDataSettings
 
     /// <summary>Create the starting list of schools at start-up.</summary>
     public bool CommunitiesEnabled { get; set; }
+
+    /// <summary>The account that gets the Admin role at start-up (any environment); empty = nobody. Kept in User Secrets
+    /// locally (and a GitHub secret in production, M9): <c>dotnet user-secrets set "SeedData:AdminEmail" "…"</c>.</summary>
+    public string AdminEmail { get; set; } = string.Empty;
 }

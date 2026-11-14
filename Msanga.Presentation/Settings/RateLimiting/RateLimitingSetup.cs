@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Msanga.Domain.Rules;
 using Msanga.Infrastructure.Settings.Identity;
 
 namespace Msanga.Presentation.Settings.RateLimiting;
@@ -25,6 +26,9 @@ public static class RateLimitingSetup
     /// nobody can flood the list.</summary>
     public const string AddCommunityPolicy = "add-community";
 
+    /// <summary>"I know them": 20 a day per member (Rules.Vouching), so nobody can confirm a crowd of fakes.</summary>
+    public const string VouchPolicy = "vouch";
+
     /// <summary>Adds the rate limiter and its policies.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The same service collection, for chaining.</returns>
@@ -38,6 +42,8 @@ public static class RateLimitingSetup
             options.AddPolicy(AccountEmailPolicy, context => FixedWindow(context, 5, TimeSpan.FromMinutes(15)));
             options.AddPolicy(AccountCodePolicy, context => FixedWindow(context, 10, TimeSpan.FromMinutes(5)));
             options.AddPolicy(AddCommunityPolicy, context => FixedWindowPerMember(context, 20, TimeSpan.FromDays(1)));
+            options.AddPolicy(VouchPolicy, context => FixedWindowPerMember(context, Vouching.MaxVouchesPerDay,
+                                                                           TimeSpan.FromDays(1)));
 
             options.OnRejected = async (context, ct) =>
             {

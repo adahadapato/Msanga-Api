@@ -19,12 +19,51 @@ namespace Msanga.Persistence.Seeding;
 /// </remarks>
 internal static class DemoMemberSeeder
 {
-    /// <summary>The demo members: Hilary from the mock-ups. More classmates can be added here later (M2–M6).</summary>
+    /// <summary>The demo members: Hilary from the mock-ups, and classmates to try vouching with (M3c).</summary>
     private static readonly (string Email, string FirstName, string LastName, string Bio)[] Demos =
     [
         ("hilary@example.com", "Hilary", "Adeyemi", "Reconnecting with old friends and making new memories."),
-        ("emeka@example.com", "Emeka", "Obi", "Class of 1998. Still the fastest in the 100 m (I think).")
+        ("emeka@example.com", "Emeka", "Obi", "1998 Set. Still the fastest in the 100 m (I think)."),
+        ("nse@example.com", "Nse", "Udo", "Red House, 1999 Set. Ask me about the inter-house sports."),
+        ("utibe@example.com", "Utibe", "Essien", "Blue House, 1998 Set. Back in Uyo after years in London.")
     ];
+
+    /// <summary>Demo members already joined at a school (Joined, not confirmed): school name, years, set, house,
+    /// class arm. Hilary isn't here: you join with her yourself, then vouch.</summary>
+    private static readonly (string Email, string School, int From, int To, int Set, string House, string? ClassArm)[] Memberships =
+    [
+        ("nse@example.com", "Federal Government College, Ikot Ekpene", 1993, 1999, 1999, "Red House", null),
+        ("utibe@example.com", "Federal Government College, Ikot Ekpene", 1992, 1998, 1998, "Blue House", "SS3A")
+    ];
+
+    /// <summary>Joins the demo members to their schools (Joined), unless they're there already. Runs after the
+    /// schools are seeded.</summary>
+    /// <param name="context">The database.</param>
+    /// <param name="logger">Start-up log.</param>
+    /// <param name="cancellationToken">Stops seeding.</param>
+    public static async Task SeedMembershipsAsync(MsangaDbContext context, ILogger logger,
+                                                  CancellationToken cancellationToken = default)
+    {
+        var added = 0;
+        foreach (var demo in Memberships)
+        {
+            var userId = await context.Users.Where(u => u.Email == demo.Email).Select(u => (Guid?)u.Id)
+                                      .FirstOrDefaultAsync(cancellationToken);
+            var school = await context.Communities.FirstOrDefaultAsync(c => c.Name == demo.School, cancellationToken);
+            if (userId is null || school is null) continue;
+            if (await context.CommunityMemberships.AnyAsync(m => m.MemberId == userId && m.CommunityId == school.Id,
+                                                             cancellationToken)) continue;
+
+            var membership = CommunityMembership.Join(userId.Value, school.Id, demo.From, demo.To, finished: true,
+                                                      DateTime.UtcNow.Year);
+            membership.ChooseSet(demo.Set, school.SetNaming, demo.House, demo.ClassArm, hostel: null, department: null);
+            context.CommunityMemberships.Add(membership);
+            added++;
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Seeded {Count} demo school membership(s)", added);
+    }
 
     /// <summary>Creates the demo members that don't exist yet.</summary>
     /// <param name="users">Identity's user manager.</param>

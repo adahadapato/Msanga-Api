@@ -58,6 +58,15 @@ public static class DbSeeder
                 () => CommunitySeeder.SeedAsync(context, logger, cancellationToken));
         }
 
+        if (seedData.DemoMembersEnabled && seedData.CommunitiesEnabled)
+        {
+            await RunStepAsync(logger, "5: demo members' schools (development)",
+                () => DemoMemberSeeder.SeedMembershipsAsync(context, logger, cancellationToken));
+        }
+
+        await RunStepAsync(logger, "6: admin",
+            () => AdminSeeder.SeedAsync(provider.GetRequiredService<UserManager<ApplicationUser>>(), seedData, logger));
+
         logger.LogInformation("Database initialization completed.");
     }
 
