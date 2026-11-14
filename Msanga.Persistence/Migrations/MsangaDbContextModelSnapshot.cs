@@ -16,7 +16,7 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261113231818_Communities";
+    public override string LastMigrationId => "20261114021605_SchoolMemberships";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -278,6 +278,57 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("CommunityAliases");
             });
 
+        modelBuilder.Entity("Msanga.Domain.Entities.CommunityMembership", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<Guid>("CommunityId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<bool>("Finished")
+                    .HasColumnType("bit");
+
+                b.Property<int>("FromYear")
+                    .HasColumnType("int");
+
+                b.Property<bool>("IsDeleted")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("bit")
+                    .HasDefaultValue(false);
+
+                b.Property<Guid>("MemberId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<int>("Status")
+                    .HasColumnType("int");
+
+                b.Property<int>("ToYear")
+                    .HasColumnType("int");
+
+                b.Property<DateTime?>("UpdatedAt")
+                    .HasColumnType("datetime2");
+
+                b.HasKey("Id");
+
+                b.HasIndex("CommunityId", "ToYear");
+
+                b.HasIndex("MemberId", "CommunityId")
+                    .IsUnique()
+                    .HasFilter("[IsDeleted] = 0");
+
+                b.ToTable("CommunityMemberships", t =>
+                    {
+                        t.HasCheckConstraint("CK_CommunityMemberships_Years", "[FromYear] >= 1940 AND [ToYear] >= [FromYear] AND [ToYear] - [FromYear] < 12");
+                    });
+            });
+
         modelBuilder.Entity("Msanga.Domain.Entities.Member", b =>
             {
                 b.Property<Guid>("Id")
@@ -535,6 +586,23 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .HasForeignKey("CommunityId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
+            });
+
+        modelBuilder.Entity("Msanga.Domain.Entities.CommunityMembership", b =>
+            {
+                b.HasOne("Msanga.Domain.Entities.Community", "Community")
+                    .WithMany()
+                    .HasForeignKey("CommunityId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("Msanga.Domain.Entities.Member", null)
+                    .WithMany()
+                    .HasForeignKey("MemberId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Community");
             });
 
         modelBuilder.Entity("Msanga.Domain.Entities.Member", b =>

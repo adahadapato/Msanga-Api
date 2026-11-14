@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M2b adding a school (14 Nov 2026)_
+_Last updated: M3a-1 joining a school (14 Nov 2026)_
 
 ## Layers
 
@@ -19,7 +19,7 @@ UnitTests ── Domain (more layers as their tests arrive)
 
 | Project | What lives there |
 |---|---|
-| `Msanga.Domain` | entities (`Member`, `Community`, `CommunityAlias`, `RefreshToken`, `AccountCode`), `Result` / `Error`, `AuthErrors`, interfaces (`IAuthService`, `IEmailSender`, repositories, `IUnitOfWork`, `ICurrentUser`), constants (setting keys, roles, policies), `SearchKey`. No packages. |
+| `Msanga.Domain` | entities (`Member`, `Community`, `CommunityAlias`, `CommunityMembership`, `RefreshToken`, `AccountCode`), `Result` / `Error`, `AuthErrors`, interfaces (`IAuthService`, `IEmailSender`, repositories, `IUnitOfWork`, `ICurrentUser`), constants (setting keys, roles, policies), `SearchKey`. No packages. |
 | `Msanga.Application` | MediatR commands / queries and their FluentValidation validators; the pipeline (Logging → Validation → handler). |
 | `Msanga.Persistence` | `MsangaDbContext` (Identity's tables + ours), table configurations, repositories, migrations (created with `dotnet ef`), start-up seeding (migrate, roles). |
 | `Msanga.Infrastructure` | `AuthService` (Identity + JWT + emailed codes), `AccountEmails` (wording), SMTP sender (MailKit) and the development outbox folder, settings checked at start-up. |
@@ -107,7 +107,33 @@ country, Nigeria first; the starting list is the pilot schools, then members add
 | `Presentation/Settings/RateLimiting/RateLimitingSetup.cs` | + `add-community`: 20 tries a day per member |
 | `UnitTests/Domain/NigerianStatesTests.cs`, `UnitTests/Application/AddCommunityCommandValidatorTests.cs` | the state list; what the form must send |
 
+## M3a-1: joining a school (14 Nov 2026)
+
+**School first, then the year** (decided 14 Nov 2026; see the roadmap): a member belongs to a school ("I was a
+student here", with the years), then to a year (set, M3b). Friendships, events and memories can cross years; only
+people from the school ever see its people (once confirmed, M3c).
+
+| File | What it does |
+|---|---|
+| `Domain/Entities/CommunityMembership.cs` | member + school + `FromYear` / `ToYear` + `Finished` + `Status`; `YearsProblem`: 1940 to this year, start ≤ end, at most 12 years |
+| `Domain/Enums/CommunityEnums.cs` | + `CommunityMembershipStatus` (Joined; Confirmed comes in M3c) |
+| `Domain/Interfaces/ICommunityMembershipRepository.cs`, `Shared/Errors/CommunityErrors.cs` | Add, Remove, Get, ListForMember; + `AlreadyMember` (409), `NotAMember` (404) |
+| `Application/Features/Communities/Commands/MembershipCommands.cs` | Join (the school must exist; not twice), ChangeMySchoolYears, Leave (deletes the row); `ISchoolYears` |
+| `Application/Features/Communities/Queries/MembershipQueries.cs` | GetMySchools, GetMyMembership |
+| `Application/Features/Communities/Validators/MembershipValidators.cs` | `SchoolYearsValidator<T>`: the year rules for the form, "this year" from `TimeProvider` |
+| `Application/Features/Communities/Dtos/CommunityDtos.cs` | + `MembershipDto` (school, years, finished, status) |
+| `Persistence/Configurations/CommunityMembershipConfiguration.cs` | table `CommunityMemberships` (migration `SchoolMemberships`): one per member per school (unique), deleted with the member or the school, a check constraint on the years, index by school + leaving year |
+| `Persistence/Repositories/CommunityMembershipRepository.cs` | loads the school and its other names with each membership; My Schools most recent first |
+| `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | + `GET` / `POST` / `PUT` / `DELETE /api/communities/{id}/membership` (`SchoolYearsBody`) |
+| `Presentation/Endpoints/Members/MemberEndpoints.cs` | + `GET /api/me/schools` |
+| `UnitTests/Domain/CommunityMembershipTests.cs`, `UnitTests/Application/SchoolYearsValidatorTests.cs` | the year rules (clock fixed in 2026) |
+
 ## Coming next
+
+- **M3a-2, web:** "Were you a student here?" on the school's page, Change / Leave, My Schools.
+- **M3b:** sets inside a school (home set from `Finished` + `ToYear`, house, class arm, department).
+- **M3c:** vouching ("I know them"), Confirmed, limited view until then.
+- **M3d:** Find People within your schools.
 
 - **M2c, web:** Find your school (live search, results, the school's page).
 - **M2d, web:** Add your school (the form, "Did you mean…?"); Find Classmates / My Schools stop being "coming soon".

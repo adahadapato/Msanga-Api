@@ -1,13 +1,15 @@
 using MediatR;
 using Msanga.Application.Features.Auth.Dtos;
 using Msanga.Application.Features.Auth.Queries;
+using Msanga.Application.Features.Communities.Dtos;
+using Msanga.Application.Features.Communities.Queries;
 using Msanga.Application.Features.Members.Commands;
 using Msanga.Domain.Constants;
 using Msanga.Presentation.Extensions;
 
 namespace Msanga.Presentation.Endpoints.Members;
 
-/// <summary><c>/api/me</c>: the signed-in member, and editing their profile.</summary>
+/// <summary><c>/api/me</c>: the signed-in member, editing their profile, and their schools.</summary>
 public static class MemberEndpoints
 {
     /// <summary>Maps the routes.</summary>
@@ -29,6 +31,12 @@ public static class MemberEndpoints
             .WithSummary("Edit my profile: names, surname at school, a line about me")
             .Produces<MemberDto>()
             .ProducesValidationProblem();
+
+        me.MapGet("/schools", async (ISender sender, CancellationToken ct) =>
+                (await sender.Send(new GetMySchoolsQuery(), ct)).ToHttp())
+            .WithName("GetMySchools")
+            .WithSummary("My Schools: the schools I joined, with my years, most recent first")
+            .Produces<IReadOnlyList<MembershipDto>>();
 
         return api;
     }

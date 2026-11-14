@@ -116,6 +116,11 @@ dotnet user-secrets set "Email:FromAddress" "<an address you verified with Brevo
 | `PUT /api/me` | member | `{ firstName, lastName, schoolSurname, bio }` |
 | `GET /api/communities?search=` | member | find a school ("fgc ikot", "UNILAG"); best first, at most 20; fewer than 2 letters → none |
 | `GET /api/communities/{id}` | member | one school; 404 `Community.NotFound` |
+| `GET /api/communities/{id}/membership` | member | have I joined this school? my years; 404 `Community.NotAMember` if not |
+| `POST /api/communities/{id}/membership` | member | "I was a student here": `{ fromYear, toYear, finished }` → 201, status Joined; 409 `Community.AlreadyMember` |
+| `PUT /api/communities/{id}/membership` | member | correct my years |
+| `DELETE /api/communities/{id}/membership` | member | leave the school (204) |
+| `GET /api/me/schools` | member | My Schools: my schools and years, most recent first |
 | `POST /api/communities` | member | `{ name, level, town, state, countryCode, otherNames, addAnyway }` → 201, marked new; 409 `Community.AlreadyListed` (same name and town) or `Community.LooksLike` (send again with `addAnyway: true`), both with `suggestions`; 20 tries a day |
 
 Errors are ProblemDetails with a `code` (e.g. `Auth.InvalidCredentials`); validation errors list each field under

@@ -66,6 +66,17 @@ Content-Type: application/json
 
 { "name": "Government College", "level": "Secondary", "town": "Umuahia", "state": "Abia", "countryCode": "NG", "addAnyway": true }
 
+### I was a student here: join a school (paste a school id from the search)
+POST {{api}}/api/communities/PASTE-A-SCHOOL-ID/membership
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "fromYear": 1992, "toYear": 1998, "finished": true }
+
+### My Schools
+GET {{api}}/api/me/schools
+Authorization: Bearer {{accessToken}}
+
 ### Refresh (the old refresh token stops working)
 @refreshToken = PASTE-THE-REFRESH-TOKEN
 POST {{api}}/api/auth/refresh

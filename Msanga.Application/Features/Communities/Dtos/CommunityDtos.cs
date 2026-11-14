@@ -26,3 +26,20 @@ public sealed record CommunityDto(
         new(c.Id, c.Name, c.Kind, c.Level, c.Town, c.State, c.CountryCode, c.Status == CommunityStatus.New,
             c.Aliases.Select(a => a.Name).Order(StringComparer.OrdinalIgnoreCase).ToList());
 }
+
+/// <summary>One of my schools: the school, my years there, whether I finished, and my status.</summary>
+/// <param name="School">The school.</param>
+/// <param name="FromYear">The year I started.</param>
+/// <param name="ToYear">The year I left.</param>
+/// <param name="Finished">True if I finished there.</param>
+/// <param name="Status">"Joined", or "Confirmed" (M3c).</param>
+public sealed record MembershipDto(
+    CommunityDto School, int FromYear, int ToYear, bool Finished, CommunityMembershipStatus Status)
+{
+    /// <summary>Maps a membership and its school (the school's aliases must be loaded).</summary>
+    /// <param name="m">The membership.</param>
+    /// <param name="school">Its school.</param>
+    /// <returns>The DTO.</returns>
+    public static MembershipDto From(CommunityMembership m, Community school) =>
+        new(CommunityDto.From(school), m.FromYear, m.ToYear, m.Finished, m.Status);
+}

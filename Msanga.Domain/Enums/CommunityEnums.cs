@@ -30,3 +30,13 @@ public enum CommunityStatus
     /// <summary>Added by a member and not yet checked (admin review comes in M7). Shown with a "new" label.</summary>
     New = 2
 }
+
+/// <summary>Where a member stands in a school they joined (decided 14 Nov 2026: school first, then the year).</summary>
+public enum CommunityMembershipStatus
+{
+    /// <summary>Says they were a student here; not vouched for yet (vouching comes in M3c).</summary>
+    Joined = 1,
+
+    /// <summary>Two confirmed members of the school said "I know them" (M3c).</summary>
+    Confirmed = 2
+}

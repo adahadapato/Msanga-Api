@@ -36,6 +36,9 @@ public sealed class MsangaDbContext(DbContextOptions<MsangaDbContext> options)
     /// <summary>Other names for schools ("FGCIE"), each with its search key.</summary>
     public DbSet<CommunityAlias> CommunityAliases => Set<CommunityAlias>();
 
+    /// <summary>Who was a student at which school, and when (school first, then the year).</summary>
+    public DbSet<CommunityMembership> CommunityMemberships => Set<CommunityMembership>();
+
     // ---------- Sign-in ----------
 
     /// <summary>Hashed refresh tokens, managed by the Identity services.</summary>
