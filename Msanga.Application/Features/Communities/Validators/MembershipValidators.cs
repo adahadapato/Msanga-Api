@@ -1,5 +1,6 @@
 using FluentValidation;
 using Msanga.Application.Features.Communities.Commands;
+using Msanga.Application.Features.Communities.Queries;
 using Msanga.Domain.Entities;
 
 namespace Msanga.Application.Features.Communities.Validators;
@@ -42,3 +43,31 @@ public sealed class JoinCommunityCommandValidator(TimeProvider clock)
 /// <summary>Checks <see cref="ChangeMySchoolYearsCommand"/>.</summary>
 public sealed class ChangeMySchoolYearsCommandValidator(TimeProvider clock)
     : SchoolYearsValidator<ChangeMySchoolYearsCommand>(clock);
+
+/// <summary>Checks <see cref="ChooseMySetCommand"/>: the details' length. Whether the set fits your years needs your
+/// membership, so the handler checks that (400 <c>Community.SetOutOfRange</c>).</summary>
+public sealed class ChooseMySetCommandValidator : AbstractValidator<ChooseMySetCommand>
+{
+    /// <summary>The rules.</summary>
+    public ChooseMySetCommandValidator()
+    {
+        const int max = CommunityMembership.DetailMaxLength;
+        RuleFor(x => x.House).MaximumLength(max).WithMessage($"Keep the house to {max} characters or fewer.");
+        RuleFor(x => x.ClassArm).MaximumLength(max).WithMessage($"Keep the class arm to {max} characters or fewer.");
+        RuleFor(x => x.Hostel).MaximumLength(max).WithMessage($"Keep the hostel to {max} characters or fewer.");
+        RuleFor(x => x.Department).MaximumLength(max).WithMessage($"Keep the department to {max} characters or fewer.");
+    }
+}
+
+/// <summary>Checks <see cref="GetSetQuery"/>: a year from 1940 to a few years from now.</summary>
+public sealed class GetSetQueryValidator : AbstractValidator<GetSetQuery>
+{
+    /// <summary>The rules.</summary>
+    /// <param name="clock">The clock ("now").</param>
+    public GetSetQueryValidator(TimeProvider clock)
+    {
+        RuleFor(x => x.Year)
+            .Must(year => year >= CommunityMembership.EarliestYear && year <= clock.GetUtcNow().Year + GetSetQuery.YearsAhead)
+            .WithMessage("There's no set for that year.");
+    }
+}

@@ -90,6 +90,20 @@ public sealed class Community : Entity<Guid>
     /// <summary>Who added it (admins only); null for the starting list.</summary>
     public Guid? AddedByMemberId { get; private set; }
 
+    /// <summary>How this school names its sets: by year of leaving (the default) or of entry. Admins change it (M7).</summary>
+    public SetNaming SetNaming { get; private set; } = SetNaming.ByLeavingYear;
+
+    /// <summary>A set as it's shown everywhere: "1998 Set" (decided 14 Nov 2026).</summary>
+    /// <param name="year">The set's year.</param>
+    /// <returns>The set's name.</returns>
+    public static string SetName(int year) => $"{year} Set";
+
+    /// <summary>Changes how this school names its sets (admins; the seed for a pilot school that names by entry).
+    /// Members' chosen sets stay as they are.</summary>
+    /// <param name="naming">By leaving year or by entry year.</param>
+    public void ChangeSetNaming(SetNaming naming) =>
+        SetNaming = Enum.IsDefined(naming) ? naming : throw new ArgumentOutOfRangeException(nameof(naming));
+
     /// <summary>The name and town as a search key, e.g. <c>government college umuahia</c>.</summary>
     public string SearchKey { get; private set; } = string.Empty;
 

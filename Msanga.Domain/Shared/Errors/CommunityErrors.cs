@@ -15,6 +15,16 @@ public static class CommunityErrors
     public static readonly Error NotAMember = Error.NotFound(
         "Community.NotAMember", "You haven't joined this school.");
 
+    /// <summary>A school's sets and people are only for those who were students there (school first).</summary>
+    public static readonly Error MembersOnly = Error.Forbidden(
+        "Community.MembersOnly", "Only people who were students here can see this. Join the school first.");
+
+    /// <summary>Choosing a set that doesn't fit your years at the school. Built with the allowed range, so it's
+    /// made by <see cref="SetOutOfRange"/>.</summary>
+    /// <param name="message">"Choose a set between 1992 and 2004: those fit the years you were here."</param>
+    /// <returns>The error (400).</returns>
+    public static Error SetOutOfRange(string message) => Error.Validation("Community.SetOutOfRange", message);
+
     /// <summary>Adding a school: one with the same name and town is already on Msanga (however it's written).
     /// No "add anyway": two copies would split its classmates.</summary>
     public static readonly Error AlreadyListed = Error.Conflict(

@@ -73,6 +73,17 @@ Content-Type: application/json
 
 { "fromYear": 1992, "toYear": 1998, "finished": true }
 
+### Your set and details (after joining)
+PUT {{api}}/api/communities/PASTE-A-SCHOOL-ID/membership/set
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "setYear": 1998, "house": "Blue House", "classArm": "SS3B", "hostel": "", "department": "" }
+
+### A set's page
+GET {{api}}/api/communities/PASTE-A-SCHOOL-ID/sets/1998
+Authorization: Bearer {{accessToken}}
+
 ### My Schools
 GET {{api}}/api/me/schools
 Authorization: Bearer {{accessToken}}

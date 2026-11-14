@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Msanga.Domain.Entities;
+using Msanga.Domain.Enums;
 
 namespace Msanga.Persistence.Configurations;
 
@@ -21,6 +22,11 @@ public sealed class CommunityConfiguration : EntityConfiguration<Community>
                .IsUnicode(false);
         builder.Property(c => c.Status).IsRequired();
         builder.Property(c => c.SearchKey).IsRequired().HasMaxLength(Community.SearchKeyMaxLength);
+
+        // Schools already in the table name their sets by leaving year. The entity always sets a value (never 0),
+        // so 0 is the "not set" sentinel and EF always writes what the entity says.
+        builder.Property(c => c.SetNaming).IsRequired()
+               .HasDefaultValue(SetNaming.ByLeavingYear).HasSentinel((SetNaming)0);
 
         // Who added it: kept if the member's account goes (admins still see it was a member), not a foreign key
         builder.Property(c => c.AddedByMemberId);

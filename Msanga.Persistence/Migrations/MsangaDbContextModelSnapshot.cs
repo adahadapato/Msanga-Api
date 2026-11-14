@@ -16,7 +16,7 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261114021605_SchoolMemberships";
+    public override string LastMigrationId => "20261114023853_Sets";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -212,6 +212,11 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .HasMaxLength(400)
                     .HasColumnType("nvarchar(400)");
 
+                b.Property<int>("SetNaming")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("int")
+                    .HasDefaultValue(1);
+
                 b.Property<string>("State")
                     .HasMaxLength(100)
                     .HasColumnType("nvarchar(100)");
@@ -283,6 +288,10 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                 b.Property<Guid>("Id")
                     .HasColumnType("uniqueidentifier");
 
+                b.Property<string>("ClassArm")
+                    .HasMaxLength(60)
+                    .HasColumnType("nvarchar(60)");
+
                 b.Property<Guid>("CommunityId")
                     .HasColumnType("uniqueidentifier");
 
@@ -292,11 +301,23 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                 b.Property<DateTime?>("DeletedAt")
                     .HasColumnType("datetime2");
 
+                b.Property<string>("Department")
+                    .HasMaxLength(60)
+                    .HasColumnType("nvarchar(60)");
+
                 b.Property<bool>("Finished")
                     .HasColumnType("bit");
 
                 b.Property<int>("FromYear")
                     .HasColumnType("int");
+
+                b.Property<string>("Hostel")
+                    .HasMaxLength(60)
+                    .HasColumnType("nvarchar(60)");
+
+                b.Property<string>("House")
+                    .HasMaxLength(60)
+                    .HasColumnType("nvarchar(60)");
 
                 b.Property<bool>("IsDeleted")
                     .ValueGeneratedOnAdd()
@@ -305,6 +326,9 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<Guid>("MemberId")
                     .HasColumnType("uniqueidentifier");
+
+                b.Property<int?>("SetYear")
+                    .HasColumnType("int");
 
                 b.Property<int>("Status")
                     .HasColumnType("int");
@@ -316,6 +340,8 @@ partial class MsangaDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("datetime2");
 
                 b.HasKey("Id");
+
+                b.HasIndex("CommunityId", "SetYear");
 
                 b.HasIndex("CommunityId", "ToYear");
 

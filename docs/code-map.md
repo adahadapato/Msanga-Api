@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M3a-1 joining a school (14 Nov 2026)_
+_Last updated: M3b-1 your set (14 Nov 2026)_
 
 ## Layers
 
@@ -128,10 +128,30 @@ people from the school ever see its people (once confirmed, M3c).
 | `Presentation/Endpoints/Members/MemberEndpoints.cs` | + `GET /api/me/schools` |
 | `UnitTests/Domain/CommunityMembershipTests.cs`, `UnitTests/Application/SchoolYearsValidatorTests.cs` | the year rules (clock fixed in 2026) |
 
+## M3b-1: your set (14 Nov 2026)
+
+Decided 14 Nov 2026: **each school chooses how its sets are named** (by leaving year, the default, or by entry year);
+sets are shown as **"1998 Set"**; house, class arm, hostel and department are **free text**, to be tidied later with
+AI (merges suggested per school, approved by an admin). A set is a school + a year: no set table yet (it comes with
+the first thing that hangs off a set, e.g. its chat).
+
+| File | What it does |
+|---|---|
+| `Domain/Enums/CommunityEnums.cs` | + `SetNaming` (ByLeavingYear, ByEntryYear) |
+| `Domain/Entities/Community.cs` | + `SetNaming` (default by leaving year), `ChangeSetNaming`, `SetName(year)` = "1998 Set" |
+| `Domain/Entities/CommunityMembership.cs` | + `SetYear` (null until you choose), `House`, `ClassArm`, `Hostel`, `Department`; `SuggestedSetYear` (leaving: the year you left if you finished; entry: the year you came), `SetYearRange` (leaving: first year … left + 6; entry: came − 6 … left), `SetYearProblem`, `ChooseSet`; `ChangeYears` clears the set if it no longer fits |
+| `Domain/Shared/Errors/CommunityErrors.cs` | + `MembersOnly` (403), `SetOutOfRange(message)` (400) |
+| `Application/…/Commands/MembershipCommands.cs` | + `ChooseMySetCommand` |
+| `Application/…/Queries/MembershipQueries.cs` | + `GetSetQuery` (school members only) |
+| `Application/…/Validators/MembershipValidators.cs` | + details ≤ 60; set pages from 1940 to 6 years from now |
+| `Application/…/Dtos/CommunityDtos.cs` | `CommunityDto` + `setNaming`; `MembershipDto` + `setYear`, `setName`, `suggestedSetYear`, `setYearChoices`, the four details; + `SetDto` |
+| `Persistence/Configurations/*` | migration `Sets`: `Communities.SetNaming` (existing schools: by leaving year), the membership's set and details, index by school + set |
+| `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | + `PUT …/membership/set` (`MySetBody`), `GET /api/communities/{id}/sets/{year}` |
+| `UnitTests/Domain/SetTests.cs`, `UnitTests/Application/SchoolYearsValidatorTests.cs` | suggestions, ranges, choosing, years changed, details, set-page years |
+
 ## Coming next
 
-- **M3a-2, web:** "Were you a student here?" on the school's page, Change / Leave, My Schools.
-- **M3b:** sets inside a school (home set from `Finished` + `ToYear`, house, class arm, department).
+- **M3b-2, web:** "Your set" on the school's page (choose, details), the set's page, My Schools shows your set.
 - **M3c:** vouching ("I know them"), Confirmed, limited view until then.
 - **M3d:** Find People within your schools.
 

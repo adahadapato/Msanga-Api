@@ -46,7 +46,7 @@ public sealed class CommunityMembershipTests
     {
         var membership = CommunityMembership.Join(Hilary, Fgcie, 1992, 1998, finished: true, ThisYear);
 
-        membership.ChangeYears(1993, 1997, finished: false, ThisYear);
+        membership.ChangeYears(1993, 1997, finished: false, ThisYear, SetNaming.ByLeavingYear);
 
         Assert.Equal((1993, 1997, false), (membership.FromYear, membership.ToYear, membership.Finished));
         Assert.Equal(CommunityMembershipStatus.Joined, membership.Status);

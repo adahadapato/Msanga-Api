@@ -42,3 +42,34 @@ public sealed class SchoolYearsValidatorTests
         Assert.False(new ChangeMySchoolYearsCommandValidator(new FixedClock())
                          .Validate(new ChangeMySchoolYearsCommand(Guid.CreateVersion7(), 1998, 1992, true)).IsValid);
 }
+
+/// <summary>"Your set": the details' length, and which set years can be asked for.</summary>
+public sealed class SetValidatorTests
+{
+    private sealed class FixedClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(2026, 11, 14, 12, 0, 0, TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void Details_are_optional() =>
+        Assert.True(new ChooseMySetCommandValidator()
+                        .Validate(new ChooseMySetCommand(Guid.CreateVersion7(), 1998, null, null, null, null)).IsValid);
+
+    [Fact]
+    public void A_detail_can_be_60_characters_at_most()
+    {
+        var error = Assert.Single(new ChooseMySetCommandValidator()
+            .Validate(new ChooseMySetCommand(Guid.CreateVersion7(), 1998, new string('a', 61), null, null, null)).Errors);
+        Assert.Equal("Keep the house to 60 characters or fewer.", error.ErrorMessage);
+    }
+
+    [Theory]
+    [InlineData(1940, true)]
+    [InlineData(2032, true)]      // someone who left early: their set finishes up to 6 years from now
+    [InlineData(1939, false)]
+    [InlineData(2033, false)]
+    public void Set_pages_exist_from_1940_to_six_years_from_now(int year, bool valid) =>
+        Assert.Equal(valid, new GetSetQueryValidator(new FixedClock())
+                                .Validate(new Msanga.Application.Features.Communities.Queries.GetSetQuery(Guid.CreateVersion7(), year)).IsValid);
+}

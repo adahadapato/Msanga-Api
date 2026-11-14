@@ -40,3 +40,13 @@ public enum CommunityMembershipStatus
     /// <summary>Two confirmed members of the school said "I know them" (M3c).</summary>
     Confirmed = 2
 }
+
+/// <summary>How a school names its sets (decided 14 Nov 2026: each school chooses; admins set it).</summary>
+public enum SetNaming
+{
+    /// <summary>By the year students left: 1992–1998 is the "1998 Set". The default.</summary>
+    ByLeavingYear = 1,
+
+    /// <summary>By the year students came in: 1992–1998 is the "1992 Set".</summary>
+    ByEntryYear = 2
+}

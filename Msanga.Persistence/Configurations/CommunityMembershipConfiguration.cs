@@ -26,6 +26,13 @@ public sealed class CommunityMembershipConfiguration : EntityConfiguration<Commu
         builder.Property(m => m.Finished).IsRequired();
         builder.Property(m => m.Status).IsRequired();
 
+        // Your set and details (M3b): all optional
+        builder.Property(m => m.SetYear);
+        builder.Property(m => m.House).HasMaxLength(CommunityMembership.DetailMaxLength);
+        builder.Property(m => m.ClassArm).HasMaxLength(CommunityMembership.DetailMaxLength);
+        builder.Property(m => m.Hostel).HasMaxLength(CommunityMembership.DetailMaxLength);
+        builder.Property(m => m.Department).HasMaxLength(CommunityMembership.DetailMaxLength);
+
         builder.HasOne<Member>()
                .WithMany()
                .HasForeignKey(m => m.MemberId)
@@ -39,7 +46,8 @@ public sealed class CommunityMembershipConfiguration : EntityConfiguration<Commu
         // One membership per member per school (rows hidden by soft delete don't count)
         builder.HasIndex(m => new { m.MemberId, m.CommunityId }).IsUnique().HasFilter("[IsDeleted] = 0");
 
-        // A school's members by year (M3b sets, M3d Find People)
+        // A school's members by year and by set (M3d Find People, set pages)
         builder.HasIndex(m => new { m.CommunityId, m.ToYear });
+        builder.HasIndex(m => new { m.CommunityId, m.SetYear });
     }
 }

@@ -120,6 +120,8 @@ dotnet user-secrets set "Email:FromAddress" "<an address you verified with Brevo
 | `POST /api/communities/{id}/membership` | member | "I was a student here": `{ fromYear, toYear, finished }` → 201, status Joined; 409 `Community.AlreadyMember` |
 | `PUT /api/communities/{id}/membership` | member | correct my years |
 | `DELETE /api/communities/{id}/membership` | member | leave the school (204) |
+| `PUT /api/communities/{id}/membership/set` | member | your set and details: `{ setYear, house, classArm, hostel, department }`; 400 `Community.SetOutOfRange` if the set doesn't fit your years |
+| `GET /api/communities/{id}/sets/{year}` | member of the school | a set's page ("1998 Set"); 403 `Community.MembersOnly` otherwise |
 | `GET /api/me/schools` | member | My Schools: my schools and years, most recent first |
 | `POST /api/communities` | member | `{ name, level, town, state, countryCode, otherNames, addAnyway }` → 201, marked new; 409 `Community.AlreadyListed` (same name and town) or `Community.LooksLike` (send again with `addAnyway: true`), both with `suggestions`; 20 tries a day |
 

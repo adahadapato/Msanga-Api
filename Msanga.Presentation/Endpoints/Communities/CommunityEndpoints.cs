@@ -94,9 +94,38 @@ public static class CommunityEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        membership.MapPut("/set", async (Guid id, MySetBody body, ISender sender, CancellationToken ct) =>
+                (await sender.Send(new ChooseMySetCommand(id, body.SetYear, body.House, body.ClassArm, body.Hostel,
+                                                          body.Department), ct)).ToHttp())
+            .WithName("ChooseMySet")
+            .WithSummary("Your set and details: { setYear, house, classArm, hostel, department } " +
+                         "(400 Community.SetOutOfRange if the set doesn't fit your years)")
+            .Produces<MembershipDto>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        // ---------- A set's page (members of the school only) ----------
+
+        communities.MapGet("/{id:guid}/sets/{year:int}", async (Guid id, int year, ISender sender, CancellationToken ct) =>
+                (await sender.Send(new GetSetQuery(id, year), ct)).ToHttp())
+            .WithName("GetSet")
+            .WithSummary("A set's page (\"1998 Set\"); 403 Community.MembersOnly if you haven't joined the school")
+            .Produces<SetDto>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return api;
     }
 }
+
+/// <summary>My set and details at a school, as the form sends them (details: blank = none).</summary>
+/// <param name="SetYear">My set's year.</param>
+/// <param name="House">House.</param>
+/// <param name="ClassArm">Class arm.</param>
+/// <param name="Hostel">Hostel.</param>
+/// <param name="Department">Department.</param>
+public sealed record MySetBody(int SetYear, string? House, string? ClassArm, string? Hostel, string? Department);
 
 /// <summary>My years at a school, as the form sends them.</summary>
 /// <param name="FromYear">The year I started.</param>

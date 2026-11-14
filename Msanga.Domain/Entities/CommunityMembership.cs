@@ -8,14 +8,24 @@ namespace Msanga.Domain.Entities;
 /// circle that sees the school's people, events and memories once confirmed (M3c).
 /// </summary>
 /// <remarks>
-/// <para><see cref="Finished"/> decides the home set in M3b: finished → the leaving year's set; left early → the
-/// member chooses the set they'd have been in.</para>
+/// <para><b>Your set</b> (<see cref="SetYear"/>, M3b): suggested from your years and the school's naming
+/// (<see cref="SuggestedSetYear"/>), then chosen by you, within <see cref="SetYearRange"/>. Null until you choose.
+/// A set is a school + a year; there's no set table until something hangs off a set (its chat, its reunion).</para>
+/// <para><b>Details</b> (all optional, free text, decided 14 Nov 2026): house, class arm, hostel, department. Tidied
+/// later with AI (merges suggested per school, approved by an admin).</para>
 /// <para>Leaving deletes the row. Joining again starts afresh (and needs vouching again, M3c).</para>
 /// </remarks>
 public sealed class CommunityMembership : Entity<Guid>
 {
     /// <summary>The earliest year accepted: members are adults, but some finished school long ago.</summary>
     public const int EarliestYear = 1940;
+
+    /// <summary>How far your set's year may be from your years: you left early (your set finished later) or joined
+    /// late (your set came in earlier).</summary>
+    public const int SetWindowYears = 6;
+
+    /// <summary>Longest house, class arm, hostel or department.</summary>
+    public const int DetailMaxLength = 60;
 
     /// <summary>The longest stay at one school (long courses, repeated years).</summary>
     public const int MaxYearsAtOneSchool = 12;
@@ -42,9 +52,10 @@ public sealed class CommunityMembership : Entity<Guid>
     public static CommunityMembership Join(Guid memberId, Guid communityId, int fromYear, int toYear, bool finished,
                                            int currentYear)
     {
-        var membership = new CommunityMembership(memberId, communityId);
-        membership.ChangeYears(fromYear, toYear, finished, currentYear);
-        return membership;
+        var problem = YearsProblem(fromYear, toYear, currentYear);
+        if (problem is not null) throw new ArgumentException(problem, nameof(fromYear));
+
+        return new CommunityMembership(memberId, communityId) { FromYear = fromYear, ToYear = toYear, Finished = finished };
     }
 
     /// <summary>The member.</summary>
@@ -68,13 +79,90 @@ public sealed class CommunityMembership : Entity<Guid>
     /// <summary>Joined, or Confirmed (M3c).</summary>
     public CommunityMembershipStatus Status { get; private set; }
 
-    /// <summary>Corrects the years (a typo, a forgotten repeated year). The status stays as it is.</summary>
+    /// <summary>Your set's year ("1998 Set"); null until you choose it.</summary>
+    public int? SetYear { get; private set; }
+
+    /// <summary>Your house (secondary schools), e.g. "Blue House"; null = not given.</summary>
+    public string? House { get; private set; }
+
+    /// <summary>Your class arm, e.g. "SS3B"; null = not given.</summary>
+    public string? ClassArm { get; private set; }
+
+    /// <summary>Your hostel; null = not given.</summary>
+    public string? Hostel { get; private set; }
+
+    /// <summary>Your department (universities, polytechnics), e.g. "Microbiology"; null = not given.</summary>
+    public string? Department { get; private set; }
+
+    /// <summary>
+    /// The sets your years allow, first to last. By leaving year: from the year you started (a one-year stay) to
+    /// <see cref="SetWindowYears"/> after you left (you left early). By entry year: from
+    /// <see cref="SetWindowYears"/> before you started (you joined late) to the year you left.
+    /// </summary>
+    /// <param name="naming">How the school names its sets.</param>
+    /// <returns>The first and last allowed set years.</returns>
+    public (int First, int Last) SetYearRange(SetNaming naming) => naming == SetNaming.ByEntryYear
+        ? (FromYear - SetWindowYears, ToYear)
+        : (FromYear, ToYear + SetWindowYears);
+
+    /// <summary>The set your years suggest: by leaving year, the year you left if you finished (null if you left
+    /// early: you choose); by entry year, the year you started.</summary>
+    /// <param name="naming">How the school names its sets.</param>
+    /// <returns>The suggested set year, or null.</returns>
+    public int? SuggestedSetYear(SetNaming naming) => naming == SetNaming.ByEntryYear
+        ? FromYear
+        : Finished ? ToYear : null;
+
+    /// <summary>What's wrong with this set for your years, in words; null if it's fine.</summary>
+    /// <param name="setYear">The set's year.</param>
+    /// <param name="naming">How the school names its sets.</param>
+    /// <returns>The problem, or null.</returns>
+    public string? SetYearProblem(int setYear, SetNaming naming)
+    {
+        var (first, last) = SetYearRange(naming);
+        return setYear < first || setYear > last
+            ? $"Choose a set between {first} and {last}: those fit the years you were here."
+            : null;
+    }
+
+    /// <summary>Chooses your set and your details (blank details = not given).</summary>
+    /// <param name="setYear">Your set's year.</param>
+    /// <param name="naming">How the school names its sets.</param>
+    /// <param name="house">House; blank = none.</param>
+    /// <param name="classArm">Class arm; blank = none.</param>
+    /// <param name="hostel">Hostel; blank = none.</param>
+    /// <param name="department">Department; blank = none.</param>
+    /// <exception cref="ArgumentException">A set outside <see cref="SetYearRange"/>, or a detail that's too long.</exception>
+    public void ChooseSet(int setYear, SetNaming naming, string? house, string? classArm, string? hostel,
+                          string? department)
+    {
+        var problem = SetYearProblem(setYear, naming);
+        if (problem is not null) throw new ArgumentException(problem, nameof(setYear));
+
+        SetYear = setYear;
+        House = Detail(house, nameof(house));
+        ClassArm = Detail(classArm, nameof(classArm));
+        Hostel = Detail(hostel, nameof(hostel));
+        Department = Detail(department, nameof(department));
+    }
+
+    private static string? Detail(string? value, string parameter)
+    {
+        var text = value?.Trim();
+        if (text?.Length > DetailMaxLength)
+            throw new ArgumentException($"Keep it to {DetailMaxLength} characters or fewer.", parameter);
+        return string.IsNullOrEmpty(text) ? null : text;
+    }
+
+    /// <summary>Corrects the years (a typo, a forgotten repeated year). The status stays as it is; your set stays
+    /// unless it no longer fits the new years (then you choose again).</summary>
     /// <param name="fromYear">The year they started there.</param>
     /// <param name="toYear">The year they left (or finished).</param>
     /// <param name="finished">True if they finished there.</param>
     /// <param name="currentYear">This year (from the clock).</param>
+    /// <param name="naming">How the school names its sets.</param>
     /// <exception cref="ArgumentException">Years that break <see cref="YearsProblem"/>.</exception>
-    public void ChangeYears(int fromYear, int toYear, bool finished, int currentYear)
+    public void ChangeYears(int fromYear, int toYear, bool finished, int currentYear, SetNaming naming)
     {
         var problem = YearsProblem(fromYear, toYear, currentYear);
         if (problem is not null) throw new ArgumentException(problem, nameof(fromYear));
@@ -82,6 +170,9 @@ public sealed class CommunityMembership : Entity<Guid>
         FromYear = fromYear;
         ToYear = toYear;
         Finished = finished;
+
+        if (SetYear is { } chosen && SetYearProblem(chosen, naming) is not null)
+            SetYear = null;
     }
 
     /// <summary>

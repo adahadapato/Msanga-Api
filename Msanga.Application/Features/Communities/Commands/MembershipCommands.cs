@@ -76,7 +76,7 @@ public sealed class ChangeMySchoolYearsCommandHandler(
         var membership = await memberships.GetAsync(memberId, c.CommunityId, ct);
         if (membership is null) return CommunityErrors.NotAMember;
 
-        membership.ChangeYears(c.FromYear, c.ToYear, c.Finished, clock.GetUtcNow().Year);
+        membership.ChangeYears(c.FromYear, c.ToYear, c.Finished, clock.GetUtcNow().Year, membership.Community.SetNaming);
         await unitOfWork.SaveChangesAsync(ct);
 
         return MembershipDto.From(membership, membership.Community);
@@ -105,5 +105,41 @@ public sealed class LeaveCommunityCommandHandler(
         memberships.Remove(membership);
         await unitOfWork.SaveChangesAsync(ct);
         return Result.Success();
+    }
+}
+
+/// <summary>"Your set": choose your set at a school you've joined, with your details (all optional).</summary>
+/// <param name="CommunityId">The school (from the address).</param>
+/// <param name="SetYear">Your set's year (within the years your membership allows).</param>
+/// <param name="House">House; blank = none.</param>
+/// <param name="ClassArm">Class arm; blank = none.</param>
+/// <param name="Hostel">Hostel; blank = none.</param>
+/// <param name="Department">Department; blank = none.</param>
+public sealed record ChooseMySetCommand(Guid CommunityId, int SetYear, string? House, string? ClassArm,
+                                        string? Hostel, string? Department) : IRequest<Result<MembershipDto>>;
+
+/// <summary>Handles <see cref="ChooseMySetCommand"/>: you must have joined; the set must fit your years
+/// (400 <c>Community.SetOutOfRange</c> with the allowed years).</summary>
+public sealed class ChooseMySetCommandHandler(
+    ICommunityMembershipRepository memberships,
+    IUnitOfWork unitOfWork,
+    ICurrentUser currentUser) : IRequestHandler<ChooseMySetCommand, Result<MembershipDto>>
+{
+    /// <inheritdoc />
+    public async Task<Result<MembershipDto>> Handle(ChooseMySetCommand c, CancellationToken ct)
+    {
+        var memberId = currentUser.UserId
+            ?? throw new InvalidOperationException("This action requires a signed-in user.");
+
+        var membership = await memberships.GetAsync(memberId, c.CommunityId, ct);
+        if (membership is null) return CommunityErrors.NotAMember;
+
+        var naming = membership.Community.SetNaming;
+        if (membership.SetYearProblem(c.SetYear, naming) is { } problem) return CommunityErrors.SetOutOfRange(problem);
+
+        membership.ChooseSet(c.SetYear, naming, c.House, c.ClassArm, c.Hostel, c.Department);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return MembershipDto.From(membership, membership.Community);
     }
 }
