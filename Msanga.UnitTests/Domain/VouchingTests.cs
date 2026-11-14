@@ -78,7 +78,8 @@ public sealed class VouchingTests
                                                          ["Nse U.", "Utibe E."]);
 
         Assert.Equal("You're confirmed at Federal Government College, Ikot Ekpene", subject);
-        Assert.Contains("Confirmed by Nse U. and Utibe E.", text);
+        Assert.Contains("Confirmed by Nse U. and Utibe E.\n", text.Replace("\r\n", "\n"));   // one dot, not two
+        Assert.DoesNotContain("E..", html + text);
         Assert.DoesNotContain("http", html + text, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("<a", html, StringComparison.OrdinalIgnoreCase);
     }

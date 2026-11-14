@@ -42,11 +42,12 @@ public sealed class ConfirmedEmail(IAuthService accounts, IEmailSender sender, I
                                                                    IReadOnlyList<string> confirmedBy)
     {
         var by = confirmedBy.Count == 0 ? "Msanga" : string.Join(" and ", confirmedBy);
+        var byEnd = by.EndsWith('.') ? "" : ".";   // short names end with a dot ("Utibe E."): no second dot
         var subject = $"You're confirmed at {schoolName}";
         var text = $"""
             Mme nsanga, {firstName}!
 
-            You're confirmed at {schoolName}. Confirmed by {by}.
+            You're confirmed at {schoolName}. Confirmed by {by}{byEnd}
 
             You can now see who else from your school is on Msanga, and say "I know them" for classmates who are
             waiting. Open Msanga to see your set.
@@ -55,7 +56,7 @@ public sealed class ConfirmedEmail(IAuthService accounts, IEmailSender sender, I
             """;
         var html = $"""
             <p>Mme nsanga, {WebUtility.HtmlEncode(firstName)}!</p>
-            <p>You're confirmed at <strong>{WebUtility.HtmlEncode(schoolName)}</strong>. Confirmed by {WebUtility.HtmlEncode(by)}.</p>
+            <p>You're confirmed at <strong>{WebUtility.HtmlEncode(schoolName)}</strong>. Confirmed by {WebUtility.HtmlEncode(by)}{byEnd}</p>
             <p>You can now see who else from your school is on Msanga, and say "I know them" for classmates who are
             waiting. Open Msanga to see your set.</p>
             <p style="color:#555">Msanga will never email you a link to sign in.</p>
