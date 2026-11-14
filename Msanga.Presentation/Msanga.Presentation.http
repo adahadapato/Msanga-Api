@@ -44,6 +44,14 @@ Content-Type: application/json
 
 { "firstName": "Ada", "lastName": "Okon", "schoolSurname": "Bassey", "bio": "Class of 1998. Physics Club." }
 
+### Find a school (try "fgcie", "govt coll umuahia", "unilag", "akwapoly")
+GET {{api}}/api/communities?search=fgc%20ikot
+Authorization: Bearer {{accessToken}}
+
+### One school (paste an id from the search)
+GET {{api}}/api/communities/PASTE-A-SCHOOL-ID
+Authorization: Bearer {{accessToken}}
+
 ### Refresh (the old refresh token stops working)
 @refreshToken = PASTE-THE-REFRESH-TOKEN
 POST {{api}}/api/auth/refresh

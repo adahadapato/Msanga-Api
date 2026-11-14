@@ -19,8 +19,8 @@ namespace Msanga.Persistence;
 ///   <item><description><b>Interceptors:</b> the audit interceptor (CreatedAt / UpdatedAt).</description></item>
 ///   <item><description><b>Database context:</b> SQL Server, migrations in this project.</description></item>
 ///   <item><description><b>Unit of work:</b> the same context instance, seen as <see cref="IUnitOfWork"/>.</description></item>
-///   <item><description><b>Repositories:</b> members, and the sign-in tables.</description></item>
-///   <item><description><b>Seeding:</b> the <c>SeedData</c> settings (demo members, development only).</description></item>
+///   <item><description><b>Repositories:</b> members, schools, and the sign-in tables.</description></item>
+///   <item><description><b>Seeding:</b> the <c>SeedData</c> settings (demo members and schools, development only).</description></item>
 /// </list>
 /// </summary>
 /// <remarks>Called once, from Infrastructure's DependencyInjection.</remarks>
@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MsangaDbContext>());   // 4
 
         services.AddScoped<IMemberRepository, MemberRepository>();                                     // 5
+        services.AddScoped<ICommunityRepository, CommunityRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAccountCodeRepository, AccountCodeRepository>();
 
@@ -64,6 +65,8 @@ public static class DependencyInjection
             settings.DemoMembersEnabled = bool.TryParse(configuration[AppSettings.SeedData.DemoMembersEnabled],
                                                         out var enabled) && enabled;
             settings.DemoPassword = configuration[AppSettings.SeedData.DemoPassword] ?? string.Empty;
+            settings.CommunitiesEnabled = bool.TryParse(configuration[AppSettings.SeedData.CommunitiesEnabled],
+                                                        out var schools) && schools;
         });
 
         return services;

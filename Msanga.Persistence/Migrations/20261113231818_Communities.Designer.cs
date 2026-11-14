@@ -12,8 +12,8 @@ using Msanga.Persistence;
 namespace Msanga.Persistence.Migrations;
 
 [DbContext(typeof(MsangaDbContext))]
-[Migration("20261113230911_Communities")]
-partial class _20261113230911_Communities
+[Migration("20261113231818_Communities")]
+partial class _20261113231818_Communities
 {
     /// <inheritdoc />
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -166,6 +166,114 @@ partial class _20261113230911_Communities
                 b.HasIndex("UserId", "Purpose", "UsedAtUtc");
 
                 b.ToTable("AccountCodes");
+            });
+
+        modelBuilder.Entity("Msanga.Domain.Entities.Community", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<Guid?>("AddedByMemberId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<string>("CountryCode")
+                    .IsRequired()
+                    .HasMaxLength(2)
+                    .IsUnicode(false)
+                    .HasColumnType("char(2)")
+                    .IsFixedLength();
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<bool>("IsDeleted")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("bit")
+                    .HasDefaultValue(false);
+
+                b.Property<int>("Kind")
+                    .HasColumnType("int");
+
+                b.Property<int>("Level")
+                    .HasColumnType("int");
+
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("nvarchar(150)");
+
+                b.Property<string>("SearchKey")
+                    .IsRequired()
+                    .HasMaxLength(400)
+                    .HasColumnType("nvarchar(400)");
+
+                b.Property<string>("State")
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
+
+                b.Property<int>("Status")
+                    .HasColumnType("int");
+
+                b.Property<string>("Town")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("nvarchar(100)");
+
+                b.Property<DateTime?>("UpdatedAt")
+                    .HasColumnType("datetime2");
+
+                b.HasKey("Id");
+
+                b.HasIndex("CountryCode");
+
+                b.HasIndex("SearchKey");
+
+                b.ToTable("Communities");
+            });
+
+        modelBuilder.Entity("Msanga.Domain.Entities.CommunityAlias", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<Guid>("CommunityId")
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("datetime2");
+
+                b.Property<bool>("IsDeleted")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("bit")
+                    .HasDefaultValue(false);
+
+                b.Property<string>("Name")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("nvarchar(150)");
+
+                b.Property<string>("SearchKey")
+                    .IsRequired()
+                    .HasMaxLength(400)
+                    .HasColumnType("nvarchar(400)");
+
+                b.Property<DateTime?>("UpdatedAt")
+                    .HasColumnType("datetime2");
+
+                b.HasKey("Id");
+
+                b.HasIndex("SearchKey");
+
+                b.HasIndex("CommunityId", "SearchKey")
+                    .IsUnique();
+
+                b.ToTable("CommunityAliases");
             });
 
         modelBuilder.Entity("Msanga.Domain.Entities.Member", b =>
@@ -418,6 +526,15 @@ partial class _20261113230911_Communities
                     .IsRequired();
             });
 
+        modelBuilder.Entity("Msanga.Domain.Entities.CommunityAlias", b =>
+            {
+                b.HasOne("Msanga.Domain.Entities.Community", null)
+                    .WithMany("Aliases")
+                    .HasForeignKey("CommunityId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+            });
+
         modelBuilder.Entity("Msanga.Domain.Entities.Member", b =>
             {
                 b.HasOne("Msanga.Persistence.Configurations.Identity.ApplicationUser", null)
@@ -434,6 +551,11 @@ partial class _20261113230911_Communities
                     .HasForeignKey("UserId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
+            });
+
+        modelBuilder.Entity("Msanga.Domain.Entities.Community", b =>
+            {
+                b.Navigation("Aliases");
             });
 #pragma warning restore 612, 618
     }

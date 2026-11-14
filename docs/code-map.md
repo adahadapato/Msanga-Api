@@ -2,7 +2,7 @@
 
 Where everything lives, and why. Kept up to date with every milestone.
 
-_Last updated: M2a-1 search keys and the first tests (13 Nov 2026)_
+_Last updated: M2a-2 schools and search (13 Nov 2026)_
 
 ## Layers
 
@@ -19,7 +19,7 @@ UnitTests ── Domain (more layers as their tests arrive)
 
 | Project | What lives there |
 |---|---|
-| `Msanga.Domain` | entities (`Member`, `RefreshToken`, `AccountCode`), `Result` / `Error`, `AuthErrors`, interfaces (`IAuthService`, `IEmailSender`, repositories, `IUnitOfWork`, `ICurrentUser`), constants (setting keys, roles, policies), `SearchKey`. No packages. |
+| `Msanga.Domain` | entities (`Member`, `Community`, `CommunityAlias`, `RefreshToken`, `AccountCode`), `Result` / `Error`, `AuthErrors`, interfaces (`IAuthService`, `IEmailSender`, repositories, `IUnitOfWork`, `ICurrentUser`), constants (setting keys, roles, policies), `SearchKey`. No packages. |
 | `Msanga.Application` | MediatR commands / queries and their FluentValidation validators; the pipeline (Logging → Validation → handler). |
 | `Msanga.Persistence` | `MsangaDbContext` (Identity's tables + ours), table configurations, repositories, migrations (created with `dotnet ef`), start-up seeding (migrate, roles). |
 | `Msanga.Infrastructure` | `AuthService` (Identity + JWT + emailed codes), `AccountEmails` (wording), SMTP sender (MailKit) and the development outbox folder, settings checked at start-up. |
@@ -78,10 +78,23 @@ country, Nigeria first; the starting list is the pilot schools, then members add
 | `UnitTests/Domain/SearchKeyTests.cs` | every way of writing a name we expect, and the key it must give |
 | `.github/workflows/msanga-api-ci.yml` | now also runs `dotnet test` |
 
+## M2a-2: schools and search (13 Nov 2026)
+
+| File | What it does |
+|---|---|
+| `Domain/Enums/CommunityEnums.cs` | `CommunityKind` (School), `CommunityLevel` (Primary, Secondary, Tertiary), `CommunityStatus` (Listed, New) |
+| `Domain/Entities/Community.cs` | a school: name, level, town, state, two-letter country, status, who added it (admins only); `SearchKey` = name + town (town once); `AddAlias` skips a name it already has, however it's written |
+| `Domain/Entities/CommunityAlias.cs` | another name ("FGCIE") and its key |
+| `Domain/Interfaces/ICommunityRepository.cs`, `Shared/Errors/CommunityErrors.cs` | the contract (`Add`, `GetByIdAsync`, `SearchAsync`); `Community.NotFound` |
+| `Application/Features/Communities/*` | `SearchCommunitiesQuery` (at most 20; under 2 letters → none; at most 100 characters), `GetCommunityQuery`, `CommunityDto` (`isNew`, `otherNames`; never who added it) |
+| `Persistence/Configurations/CommunityConfiguration.cs` | tables `Communities` and `CommunityAliases` (deleted with their school; one school can't have the same other name twice) |
+| `Persistence/Repositories/CommunityRepository.cs` | search: every word must start a word of the school's key or an other name's key (`' ' + key LIKE '% word%'`); best first = a key starting with the whole search, then Listed, then A–Z |
+| `Persistence/Seeding/CommunitySeeder.cs` | development: six schools and their other names; adds only the missing ones (step 4 of start-up, `SeedData:CommunitiesEnabled`) |
+| `Presentation/Endpoints/Communities/CommunityEndpoints.cs` | `GET /api/communities?search=`, `GET /api/communities/{id}`, members only |
+| `UnitTests/Domain/CommunityTests.cs` | the town in the key once, other names not repeated, tidy places, bad details refused |
+
 ## Coming next
 
-- **M2a-2:** the `Community` and `CommunityAlias` tables (migration `Communities`), `GET /api/communities?search=`,
-  `GET /api/communities/{id}`, development seed of pilot schools.
 - **M2b:** `POST /api/communities` with "Did you mean…?" (409 with suggestions) and a rate limit.
 
 - **More tests:** AuthService against SQLite or Testcontainers, endpoints with `WebApplicationFactory`.

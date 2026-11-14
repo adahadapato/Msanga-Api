@@ -8,7 +8,8 @@ using Msanga.Persistence.Configurations.Identity;
 namespace Msanga.Persistence.Seeding;
 
 /// <summary>
-/// At start-up: applies pending database migrations, creates the roles, and (development only) the demo members.
+/// At start-up: applies pending database migrations, creates the roles, and (development only) the demo members and
+/// the starting list of schools.
 /// </summary>
 /// <remarks>
 /// <para>Any failure is logged and stops start-up: a half-ready database is worse than an API that won't start.</para>
@@ -49,6 +50,12 @@ public static class DbSeeder
             await RunStepAsync(logger, "3: demo members (development)",
                 () => DemoMemberSeeder.SeedAsync(provider.GetRequiredService<UserManager<ApplicationUser>>(),
                                                  context, seedData, logger, cancellationToken));
+        }
+
+        if (seedData.CommunitiesEnabled)
+        {
+            await RunStepAsync(logger, "4: schools (development)",
+                () => CommunitySeeder.SeedAsync(context, logger, cancellationToken));
         }
 
         logger.LogInformation("Database initialization completed.");

@@ -80,6 +80,9 @@ public static class AppSettings
 
         /// <summary>Their password (SECRET: User Secrets only, never in appsettings).</summary>
         public const string DemoPassword = "SeedData:DemoPassword";
+
+        /// <summary>Create the starting list of schools at start-up (true only in appsettings.Development.json).</summary>
+        public const string CommunitiesEnabled = "SeedData:CommunitiesEnabled";
     }
 
     // ==================== Identity ====================

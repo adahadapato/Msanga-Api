@@ -28,6 +28,14 @@ public sealed class MsangaDbContext(DbContextOptions<MsangaDbContext> options)
     /// <summary>Members: one per account, same Id.</summary>
     public DbSet<Member> Members => Set<Member>();
 
+    // ---------- Communities (schools) ----------
+
+    /// <summary>Schools: official name, level, place, status, search key.</summary>
+    public DbSet<Community> Communities => Set<Community>();
+
+    /// <summary>Other names for schools ("FGCIE"), each with its search key.</summary>
+    public DbSet<CommunityAlias> CommunityAliases => Set<CommunityAlias>();
+
     // ---------- Sign-in ----------
 
     /// <summary>Hashed refresh tokens, managed by the Identity services.</summary>

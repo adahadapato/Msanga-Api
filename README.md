@@ -64,6 +64,9 @@ Restart the API: the console says "Seeded demo member hilary@example.com". She's
 alone. This only happens where `SeedData:DemoMembersEnabled` is true, i.e. `appsettings.Development.json`; the live
 server never has demo members.
 
+The same goes for the **starting list of schools** (`SeedData:CommunitiesEnabled`): six Nigerian schools with their
+other names (FGCIE, GCU, KC, UniUyo, UNILAG, Akwapoly), so "Find your school" has something to find.
+
 ## Tests
 
 ```powershell
@@ -111,6 +114,8 @@ dotnet user-secrets set "Email:FromAddress" "<an address you verified with Brevo
 | `PUT /api/auth/password` | member | `{ currentPassword, newPassword }`; signs out every session |
 | `GET /api/me` | member | who I am |
 | `PUT /api/me` | member | `{ firstName, lastName, schoolSurname, bio }` |
+| `GET /api/communities?search=` | member | find a school ("fgc ikot", "UNILAG"); best first, at most 20; fewer than 2 letters → none |
+| `GET /api/communities/{id}` | member | one school; 404 `Community.NotFound` |
 
 Errors are ProblemDetails with a `code` (e.g. `Auth.InvalidCredentials`); validation errors list each field under
 `errors`. Too many tries: 429 `RateLimit.TooManyRequests`.

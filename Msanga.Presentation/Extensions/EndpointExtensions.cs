@@ -1,5 +1,6 @@
 using Msanga.Presentation.Endpoints.Auth;
 using Msanga.Presentation.Endpoints.Hello;
+using Msanga.Presentation.Endpoints.Communities;
 using Msanga.Presentation.Endpoints.Members;
 
 namespace Msanga.Presentation.Extensions;
@@ -17,6 +18,7 @@ public static class EndpointExtensions
         api.MapHelloEndpoints();             // /api/hello
         api.MapAuthEndpoints();              // /api/auth/…
         api.MapMemberEndpoints();            // /api/me
+        api.MapCommunityEndpoints();         // /api/communities
 
         app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
            .ExcludeFromDescription();
